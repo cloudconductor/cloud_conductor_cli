@@ -1,0 +1,16 @@
+AllCops:
+  Exclude:
+    - '**/*.gemspec'
+    - 'bin/*'
+    - 'vendor/bundle/**/*'
+    - 'tmp/**/*'
+LineLength:
+  Max: 140
+MethodLength:
+  Max: 20
+CyclomaticComplexity:
+  Max: 10
+PerceivedComplexity:
+  Max: 10
+Documentation:
+  Enabled: false
