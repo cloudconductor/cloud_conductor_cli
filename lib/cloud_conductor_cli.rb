@@ -1,14 +1,6 @@
 require 'cloud_conductor_cli/version'
-require 'active_support/dependencies/autoload'
+require 'active_support/dependencies'
 
 module CloudConductorCli
-  extend ActiveSupport::Autoload
-
-  autoload :Connection
-  autoload :Base
-  autoload :Client
-  autoload :Cloud
-  autoload :Pattern
-  autoload :System
-  autoload :Application
+  ActiveSupport::Dependencies.autoload_paths << File.expand_path('.', File.dirname(__FILE__))
 end
