@@ -3,6 +3,8 @@ require 'faraday'
 module CloudConductorCli
   module Helpers
     class Connection
+      include Helpers::Output
+
       def initialize(host, port = nil)
         cc_host = host || ENV['CC_HOST']
         cc_port = port || ENV['CC_PORT'] || 80
