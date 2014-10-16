@@ -24,9 +24,9 @@ module CloudConductorCli
         result.nil? ? name : result['id']
       end
 
-      def select_by_names(model, name, parent_model: nil, parent_id: nil)
+      def select_by_names(model, names, parent_model: nil, parent_id: nil)
         records = list_records(model, parent_model: parent_model, parent_id: parent_id)
-        records.select { |record| record['name'] == name }
+        records.select { |record| names.include?(record['name']) }
       end
 
       def pattern_parameters(pattern_names)
