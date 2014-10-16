@@ -64,19 +64,25 @@ module CloudConductorCli
       end
 
       def stacks(options)
+        if options['parameter_file']
+          parameters = JSON.parse(File.read(options['parameter_file']))
+        else
+          parameters = input_template_parameters(options['patterns'])
+        end
+        if options['user_attribute_file']
+          user_attributes = JSON.parse(File.read(options['user_attribute_file']))
+        else
+          user_attributes = {}
+        end
         patterns = select_by_names(:pattern, options['patterns'])
         patterns.map do |pattern|
-          if options['parameter_file']
-            template_parameters = File.read(options['parameter_file'])
-          else
-            template_parameters = input_template_parameters(options['patterns'])
-          end
-          user_attributes = File.read(options['user_attribute_file']) if options['user_attribute_file']
+          template_parameters = parameters.key?(pattern['name']) ? parameters[pattern['name']] : {}
+          attributes = user_attributes.key?(pattern['name']) ? user_attributes[pattern['name']] : {}
           {
-            name: pattern['name'],
+            name: "#{options['name']}-#{pattern['name'].gsub(/_/, '-')}",
             pattern_id: pattern['id'],
-            template_parameters: template_parameters,
-            parameters: user_attributes || nil
+            template_parameters: JSON.dump(template_parameters),
+            parameters: JSON.dump(attributes)
           }
         end
       end
