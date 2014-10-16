@@ -12,8 +12,9 @@ module CloudConductorCli
         display_list(JSON.parse(response.body), except: %w(template_parameters parameters))
       end
 
-      desc 'show SYSTEM_ID', 'Show system details'
-      def show(id)
+      desc 'show SYSTEM_NAME', 'Show system details'
+      def show(system_name)
+        id = find_id_by_name(:system, system_name)
         response = connection.get("/systems/#{id}")
         error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get system information. returns #{response.status}") unless response.success?
@@ -42,7 +43,7 @@ module CloudConductorCli
         display_details(JSON.parse(response.body))
       end
 
-      desc 'update SYSTEM_ID', 'Update system'
+      desc 'update SYSTEM_NAME', 'Update system'
       method_option :name, type: :string, desc: 'System name'
       method_option :domain, type: :string, desc: 'Domain name to designate this system'
       method_option :patterns, type: :array, required: true, desc: 'Platform pattern name to build core system'
@@ -51,7 +52,8 @@ module CloudConductorCli
                                      desc: 'Load parameters from file. If this option does not specified, ' \
                                            'open interactive shell to answer parameters.'
       method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
-      def update(id)
+      def update(system_name)
+        id = find_id_by_name(:system, system_name)
         payload = {}
         payload[:name] = options['name'] if options['name']
         payload[:domain] = options['domain'] if options['domain']
@@ -63,8 +65,9 @@ module CloudConductorCli
         display_details(JSON.parse(response.body))
       end
 
-      desc 'delete SYSTEM_ID', 'Delete system'
-      def delete(id)
+      desc 'delete SYSTEM_NAME', 'Delete system'
+      def delete(system_name)
+        id = find_id_by_name(:system, system_name)
         response = connection.delete("/systems/#{id}")
         error_exit('Specified system record does not exist.') if response.status == 404
         error_exit("Failed to delete system record. returns #{response.status}") unless response.success?
