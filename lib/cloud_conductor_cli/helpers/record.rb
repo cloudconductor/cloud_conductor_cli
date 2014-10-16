@@ -64,7 +64,7 @@ module CloudConductorCli
       end
 
       def stacks(options)
-        patterns = select_by_names(options['patterns'])
+        patterns = select_by_names(:pattern, options['patterns'])
         patterns.map do |pattern|
           if options['parameter_file']
             template_parameters = File.read(options['parameter_file'])
@@ -79,6 +79,14 @@ module CloudConductorCli
             parameters: user_attributes || nil
           }
         end
+      end
+
+      def targets(options)
+        [{
+          operating_system_id: 1,
+          source_image: source_image(options),
+          ssh_username: 'cloud-user'
+        }]
       end
 
       def source_image(options)
