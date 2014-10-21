@@ -37,7 +37,7 @@ module CloudConductorCli
         payload = { url: options['url'], revision: options['revision'] }
         response = connection.post('/patterns', payload)
         error_exit("Failed to register patterns. returns #{response.status}") unless response.success?
-        display_message 'Create acceppted. Building pre-build images to registered clouds.'
+        display_message 'Create accepted. Building pre-build images to registered clouds.'
         display_details(JSON.parse(response.body))
       end
 
@@ -53,7 +53,7 @@ module CloudConductorCli
         display_details(JSON.parse(response.body))
       end
 
-      desc 'delete PATTERN_NAME', 'Delete pattern and pre-build images'
+      desc 'delete PATTERN_NAME', 'Delete pattern'
       def delete(pattern_name)
         id = find_id_by_name(:pattern, pattern_name)
         response = connection.delete("/patterns/#{id}")

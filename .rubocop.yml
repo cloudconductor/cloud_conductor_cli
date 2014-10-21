@@ -7,7 +7,7 @@ AllCops:
 LineLength:
   Max: 140
 MethodLength:
-  Max: 20
+  Max: 30
 CyclomaticComplexity:
   Max: 10
 PerceivedComplexity:

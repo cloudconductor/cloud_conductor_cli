@@ -9,7 +9,7 @@ module CloudConductorCli
       def list
         response = connection.get('/systems')
         error_exit('Failed to get systems') unless response.success?
-        display_list(JSON.parse(response.body), except: %w(template_parameters parameters))
+        display_list(JSON.parse(response.body), exclude_keys: %w(template_parameters parameters))
       end
 
       desc 'show SYSTEM_NAME', 'Show system details'
@@ -39,7 +39,7 @@ module CloudConductorCli
         }
         response = connection.post('/systems', payload)
         error_exit("Failed to register systems. returns #{response.status}") unless response.success?
-        display_message 'Create acceppted. Provisioning system to specified cloud.'
+        display_message 'Create accepted. Provisioning system to specified cloud.'
         display_details(JSON.parse(response.body))
       end
 

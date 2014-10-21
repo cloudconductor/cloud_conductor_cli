@@ -8,9 +8,9 @@ module CloudConductorCli
         puts indent + message
       end
 
-      def display_list(data, except: nil)
+      def display_list(data, exclude_keys: [])
         display_data = data
-        display_data = filter(display_data, except) unless except.nil?
+        display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
         if display_data.empty?
           display_message 'No records'
         else
@@ -18,9 +18,9 @@ module CloudConductorCli
         end
       end
 
-      def display_details(data, except: nil)
+      def display_details(data, exclude_keys: [])
         display_data = data
-        display_data = filter(display_data, except) unless except.nil?
+        display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
         display_data = verticalize(display_data)
         Formatador.display_compact_table(display_data)
       end
@@ -32,7 +32,7 @@ module CloudConductorCli
         end
       end
 
-      def filter(data, exclude_keys)
+      def filter(data, exclude_keys = [])
         case data
         when Array
           data.map do |record|

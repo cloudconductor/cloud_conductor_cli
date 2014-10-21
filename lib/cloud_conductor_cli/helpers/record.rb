@@ -21,7 +21,8 @@ module CloudConductorCli
       def find_id_by_name(model, name, parent_model: nil, parent_id: nil)
         records = list_records(model, parent_model: parent_model, parent_id: parent_id)
         result = records.find { |record| record['name'] == name }
-        result.nil? ? name : result['id']
+        result = records.find { |record| record['id'].to_s == name.to_s } if result.nil?
+        result.nil? ? nil : result['id']
       end
 
       def select_by_names(model, names, parent_model: nil, parent_id: nil)

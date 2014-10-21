@@ -42,7 +42,7 @@ module CloudConductorCli
         payload = options.select { |k, _v| payload_keys.include?(k) }
         response = connection.post("/systems/#{system_id}/applications", payload)
         error_exit("Failed to register applications. returns #{response.status}") unless response.success?
-        display_message 'Create acceppted. Deploying application.'
+        display_message 'Create accepted. Deploying application.'
         display_details(JSON.parse(response.body))
       end
 
@@ -68,7 +68,7 @@ module CloudConductorCli
         display_details(JSON.parse(response.body))
       end
 
-      desc 'delete APPLICATION_ID', 'Delete application and pre-build images'
+      desc 'delete APPLICATION_ID', 'Delete application'
       method_option :system_name, type: :string, required: true, desc: 'Target system name'
       def delete(id)
         system_id = find_id_by_name(:system, options['system_name'])
