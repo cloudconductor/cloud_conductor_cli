@@ -16,8 +16,7 @@ module CloudConductorCli
         parameters.each_with_object({}) do |(pattern_name, params), result|
           display_message "Input #{pattern_name} Parameters"
           result[pattern_name] = params.each_with_object({}) do |(key_name, options), inputs|
-            # next if param['description'].include?("This parameter is automatically filled by CloudConductor")
-            next if param['Description'].include?('ImageId')
+            next if options['Description'] =~ /^\[computed\]/
             display_message("#{key_name}: #{options['Description']}", indent_level: 1)
             loop do
               input = Readline.readline("  Default [#{options['Default']}] > ")
