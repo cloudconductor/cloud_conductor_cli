@@ -18,12 +18,13 @@ module CloudConductorCli
           result[pattern_name] = params.each_with_object({}) do |(key_name, options), inputs|
             next if options['Description'] =~ /^\[computed\]/
             display_message("#{key_name}: #{options['Description']}", indent_level: 1)
+            input = nil
             loop do
               input = Readline.readline("  Default [#{options['Default']}] > ")
               input = options['Default'] if !options['Default'].nil? && (input.nil? || input.empty?)
               break if validate_parameter(options, input)
             end
-            inputs[keyname] = input
+            inputs[key_name] = input
           end
         end
       end

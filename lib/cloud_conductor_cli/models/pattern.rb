@@ -27,7 +27,7 @@ module CloudConductorCli
         response = connection.get("/patterns/#{id}/parameters")
         error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get pattern information. returns #{response.status}") unless response.success?
-        display_list(JSON.parse(response.body))
+        display_details(JSON.parse(response.body))
       end
 
       desc 'create', 'Register pattern and build pre-build images'
