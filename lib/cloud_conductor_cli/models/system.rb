@@ -24,7 +24,7 @@ module CloudConductorCli
       desc 'create', 'Create system from patterns'
       method_option :name, type: :string, required: true, desc: 'System name'
       method_option :domain, type: :string, required: true, desc: 'Domain name to designate this system'
-      method_option :patterns, type: :string, required: true, desc: 'Pattern names to build system'
+      method_option :patterns, type: :array, required: true, desc: 'Pattern names to build system'
       method_option :clouds, type: :array, required: true, desc: 'Cloud names to build system. First cloud is primary.'
       method_option :parameter_file, type: :string,
                                      desc: 'Load pattern parameters from json file. If this option does not specified, ' \
