@@ -99,6 +99,7 @@ module CloudConductorCli
       def source_image(options)
         # TODO: Fix CloudConductor Server
         aws_base_images = {
+          'ap-northeast-1' => 'ami-9b4b789a',
           'ap-southeast-1' => 'ami-0eb7965c',
           'ap-southeast-2' => 'ami-c50864ff',
           'eu-west-1' => 'ami-9210bee5',
