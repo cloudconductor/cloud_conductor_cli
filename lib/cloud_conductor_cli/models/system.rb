@@ -8,7 +8,7 @@ module CloudConductorCli
       desc 'list', 'List systems'
       def list
         response = connection.get('/systems')
-        error_exit('Failed to get systems') unless response.success?
+        error_exit('Failed to get systems', response) unless response.success?
         display_list(JSON.parse(response.body), exclude_keys: %w(template_parameters parameters))
       end
 
@@ -17,7 +17,7 @@ module CloudConductorCli
         id = find_id_by_name(:system, system_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.get("/systems/#{id}")
-        error_exit("Failed to get system information. returns #{response.status}") unless response.success?
+        error_exit("Failed to get system information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
@@ -38,7 +38,7 @@ module CloudConductorCli
           stacks: stacks(options)
         }
         response = connection.post('/systems', payload)
-        error_exit("Failed to register systems. returns #{response.status}") unless response.success?
+        error_exit("Failed to register systems. returns #{response.status}", response) unless response.success?
         display_message 'Create accepted. Provisioning system to specified cloud.'
         display_details(JSON.parse(response.body))
       end
@@ -61,7 +61,7 @@ module CloudConductorCli
         payload[:clouds] = clouds_with_priority(options['clouds']) if options['clouds']
         payload[:stacks] = stacks(options) if options['parameter_file'] || options['user_attribute_file']
         response = connection.put("/systems/#{id}", payload)
-        error_exit("Failed to update system. returns #{response.status}") unless response.success?
+        error_exit("Failed to update system. returns #{response.status}", response) unless response.success?
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
       end
@@ -71,7 +71,7 @@ module CloudConductorCli
         id = find_id_by_name(:system, system_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.delete("/systems/#{id}")
-        error_exit("Failed to delete system record. returns #{response.status}") unless response.success?
+        error_exit("Failed to delete system record. returns #{response.status}", response) unless response.success?
         display_message 'Delete completed successfully.'
       end
     end

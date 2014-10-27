@@ -8,7 +8,7 @@ module CloudConductorCli
       desc 'list', 'List patterns'
       def list
         response = connection.get('/patterns')
-        error_exit('Failed to get patterns') unless response.success?
+        error_exit('Failed to get patterns', response) unless response.success?
         display_list(JSON.parse(response.body))
       end
 
@@ -17,7 +17,7 @@ module CloudConductorCli
         id = find_id_by_name(:pattern, pattern_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.get("/patterns/#{id}")
-        error_exit("Failed to get pattern information. returns #{response.status}") unless response.success?
+        error_exit("Failed to get pattern information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
@@ -26,7 +26,7 @@ module CloudConductorCli
         id = find_id_by_name(:pattern, pattern_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.get("/patterns/#{id}/parameters")
-        error_exit("Failed to get pattern information. returns #{response.status}") unless response.success?
+        error_exit("Failed to get pattern information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
@@ -36,7 +36,7 @@ module CloudConductorCli
       def create
         payload = { url: options['url'], revision: options['revision'] }
         response = connection.post('/patterns', payload)
-        error_exit("Failed to register patterns. returns #{response.status}") unless response.success?
+        error_exit("Failed to register patterns. returns #{response.status}", response) unless response.success?
         display_message 'Create accepted. Building pre-build images to registered clouds.'
         display_details(JSON.parse(response.body))
       end
@@ -49,7 +49,7 @@ module CloudConductorCli
         error_exit('Specified record does not exist.') unless id
         payload = { url: options['url'], revision: options['revision'] }
         response = connection.put("/patterns/#{id}", payload)
-        error_exit("Failed to update pattern. returns #{response.status}") unless response.success?
+        error_exit("Failed to update pattern. returns #{response.status}", response) unless response.success?
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
       end
@@ -59,7 +59,7 @@ module CloudConductorCli
         id = find_id_by_name(:pattern, pattern_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.delete("/patterns/#{id}")
-        error_exit('Failed to delete pattern record.') unless response.success?
+        error_exit('Failed to delete pattern record.', response) unless response.success?
         display_message 'Delete completed successfully.'
       end
     end

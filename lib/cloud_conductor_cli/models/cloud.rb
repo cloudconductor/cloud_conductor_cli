@@ -8,7 +8,7 @@ module CloudConductorCli
       desc 'list', 'List clouds'
       def list
         response = connection.get('/clouds')
-        error_exit('Failed to get clouds') unless response.success?
+        error_exit('Failed to get clouds', response) unless response.success?
         display_list(JSON.parse(response.body))
       end
 
@@ -17,7 +17,7 @@ module CloudConductorCli
         id = find_id_by_name(:cloud, cloud_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.get("/clouds/#{id}")
-        error_exit("Failed to get cloud information. returns #{response.status}") unless response.success?
+        error_exit("Failed to get cloud information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
@@ -35,7 +35,7 @@ module CloudConductorCli
         payload = options.select { |k, _v| payload_keys.include?(k) }
         payload[:targets] = targets(options)
         response = connection.post('/clouds', payload)
-        error_exit("Failed to register cloud. returns #{response.status}") unless response.success?
+        error_exit("Failed to register cloud. returns #{response.status}", response) unless response.success?
         display_message 'Register completed successfully.'
         display_details(JSON.parse(response.body))
       end
@@ -52,7 +52,7 @@ module CloudConductorCli
         payload_keys = %w(name entry_point key secret tenant_name)
         payload = options.select { |k, _v| payload_keys.include?(k) }
         response = connection.put("/clouds/#{id}", payload)
-        error_exit("Failed to update cloud. returns #{response.status}") unless response.success?
+        error_exit("Failed to update cloud. returns #{response.status}", response) unless response.success?
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
       end
@@ -62,7 +62,7 @@ module CloudConductorCli
         id = find_id_by_name(:cloud, cloud_name)
         error_exit('Specified record does not exist.') unless id
         response = connection.delete("/clouds/#{id}")
-        error_exit('Failed to delete cloud record.') unless response.success?
+        error_exit('Failed to delete cloud record.', response) unless response.success?
         display_message 'Delete completed successfully.'
       end
     end

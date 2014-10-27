@@ -11,7 +11,7 @@ module CloudConductorCli
         system_id = find_id_by_name(:system, options['system_name'])
         error_exit('Specified record does not exist.') unless system_id
         response = connection.get("/systems/#{system_id}/applications")
-        error_exit('Failed to get applications') unless response.success?
+        error_exit('Failed to get applications', response) unless response.success?
         display_list(JSON.parse(response.body))
       end
 
@@ -23,7 +23,7 @@ module CloudConductorCli
         id = find_id_by_name(:application, application_name, parent_model: :system, parent_id: system_id)
         error_exit('Specified record does not exist.') unless id
         response = connection.get("/systems/#{system_id}/applications/#{id}")
-        error_exit("Failed to get application information. returns #{response.status}") unless response.success?
+        error_exit("Failed to get application information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
@@ -44,7 +44,7 @@ module CloudConductorCli
         payload_keys = %w(name domain type protocol url revision pre_deploy post_deploy parameters)
         payload = options.select { |k, _v| payload_keys.include?(k) }
         response = connection.post("/systems/#{system_id}/applications", payload)
-        error_exit("Failed to register applications. returns #{response.status}") unless response.success?
+        error_exit("Failed to register applications. returns #{response.status}", response) unless response.success?
         display_message 'Create accepted. Deploying application.'
         display_details(JSON.parse(response.body))
       end
@@ -68,7 +68,7 @@ module CloudConductorCli
         payload_keys = %w(name domain type protocol url revision pre_deploy post_deploy parameters)
         payload = options.select { |k, _v| payload_keys.include?(k) }
         response = connection.put("/systems/#{system_id}/applications/#{id}", payload)
-        error_exit("Failed to update application. returns #{response.status}") unless response.success?
+        error_exit("Failed to update application. returns #{response.status}", response) unless response.success?
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
       end
@@ -81,7 +81,7 @@ module CloudConductorCli
         id = find_id_by_name(:application, application_name, parent_model: :system, parent_id: system_id)
         error_exit('Specified record does not exist.') unless id
         response = connection.delete("/systems/#{system_id}/applications/#{id}")
-        error_exit('Failed to delete application record.') unless response.success?
+        error_exit('Failed to delete application record.', response) unless response.success?
         display_message 'Delete completed successfully.'
       end
     end
