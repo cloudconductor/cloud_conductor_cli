@@ -45,8 +45,12 @@ module CloudConductorCli
         end
       end
 
-      def error_exit(message, exit_code = 1)
+      def error_exit(message, response = nil, exit_code = 1)
         warn "Error: #{message}"
+        warn "#{JSON.parse(response.body)['message']}" if response
+        exit exit_code
+      rescue JSON::ParserError
+        warn response.body if response
         exit exit_code
       end
 
