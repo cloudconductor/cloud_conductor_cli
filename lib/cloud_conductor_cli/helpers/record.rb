@@ -27,7 +27,9 @@ module CloudConductorCli
 
       def select_by_names(model, names, parent_model: nil, parent_id: nil)
         records = list_records(model, parent_model: parent_model, parent_id: parent_id)
-        records.select { |record| names.include?(record['name']) }
+        records.select do |record|
+          names.include?(record['name']) || names.include?(record['id'].to_s)
+        end
       end
 
       def pattern_parameters(pattern_names)
