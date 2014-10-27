@@ -33,10 +33,8 @@ module CloudConductorCli
       end
 
       def pattern_parameters(pattern_names)
-        response = connection.get('/patterns')
-        patterns = JSON.parse(response.body)
         pattern_names.each_with_object({}) do |pattern_name, result|
-          pattern_id = patterns.find { |pattern| pattern['name'] == pattern_name }['id']
+          pattern_id = find_id_by_name(:pattern, pattern_name)
           next if pattern_id.nil?
           response = connection.get("/patterns/#{pattern_id}/parameters")
           parameters = JSON.parse(response.body)
