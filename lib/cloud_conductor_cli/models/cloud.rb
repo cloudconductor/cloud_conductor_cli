@@ -15,8 +15,8 @@ module CloudConductorCli
       desc 'show CLOUD_NAME', 'Show cloud details'
       def show(cloud_name)
         id = find_id_by_name(:cloud, cloud_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.get("/clouds/#{id}")
-        error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get cloud information. returns #{response.status}") unless response.success?
         display_details(JSON.parse(response.body))
       end
@@ -48,6 +48,7 @@ module CloudConductorCli
       method_option :tenant_name, type: :string, desc: '(OpenStack) OpenStack tenant name'
       def update(cloud_name)
         id = find_id_by_name(:cloud, cloud_name)
+        error_exit('Specified record does not exist.') unless id
         payload_keys = %w(name entry_point key secret tenant_name)
         payload = options.select { |k, _v| payload_keys.include?(k) }
         response = connection.put("/clouds/#{id}", payload)
@@ -59,8 +60,8 @@ module CloudConductorCli
       desc 'delete CLOUD_NAME', 'Delete cloud'
       def delete(cloud_name)
         id = find_id_by_name(:cloud, cloud_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.delete("/clouds/#{id}")
-        error_exit('Specified cloud record does not exist.') if response.status == 404
         error_exit('Failed to delete cloud record.') unless response.success?
         display_message 'Delete completed successfully.'
       end

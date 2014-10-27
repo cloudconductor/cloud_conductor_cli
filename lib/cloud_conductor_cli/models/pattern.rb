@@ -15,8 +15,8 @@ module CloudConductorCli
       desc 'show PATTERN_NAME', 'Show pattern details'
       def show(pattern_name)
         id = find_id_by_name(:pattern, pattern_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.get("/patterns/#{id}")
-        error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get pattern information. returns #{response.status}") unless response.success?
         display_details(JSON.parse(response.body))
       end
@@ -24,8 +24,8 @@ module CloudConductorCli
       desc 'show-parameters PATTERN_NAME', "Show pattern's template parameters"
       def show_parameters(pattern_name)
         id = find_id_by_name(:pattern, pattern_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.get("/patterns/#{id}/parameters")
-        error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get pattern information. returns #{response.status}") unless response.success?
         display_details(JSON.parse(response.body))
       end
@@ -46,6 +46,7 @@ module CloudConductorCli
       method_option :revision,    type: :string, desc: "Pattern's git repository revision"
       def update(pattern_name)
         id = find_id_by_name(:pattern, pattern_name)
+        error_exit('Specified record does not exist.') unless id
         payload = { url: options['url'], revision: options['revision'] }
         response = connection.put("/patterns/#{id}", payload)
         error_exit("Failed to update pattern. returns #{response.status}") unless response.success?
@@ -56,8 +57,8 @@ module CloudConductorCli
       desc 'delete PATTERN_NAME', 'Delete pattern'
       def delete(pattern_name)
         id = find_id_by_name(:pattern, pattern_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.delete("/patterns/#{id}")
-        error_exit('Specified pattern record does not exist.') if response.status == 404
         error_exit('Failed to delete pattern record.') unless response.success?
         display_message 'Delete completed successfully.'
       end

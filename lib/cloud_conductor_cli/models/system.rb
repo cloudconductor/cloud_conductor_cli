@@ -15,8 +15,8 @@ module CloudConductorCli
       desc 'show SYSTEM_NAME', 'Show system details'
       def show(system_name)
         id = find_id_by_name(:system, system_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.get("/systems/#{id}")
-        error_exit('Specified record does not exist.') if response.status == 404
         error_exit("Failed to get system information. returns #{response.status}") unless response.success?
         display_details(JSON.parse(response.body))
       end
@@ -54,6 +54,7 @@ module CloudConductorCli
       method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
       def update(system_name)
         id = find_id_by_name(:system, system_name)
+        error_exit('Specified record does not exist.') unless id
         payload = {}
         payload[:name] = options['name'] if options['name']
         payload[:domain] = options['domain'] if options['domain']
@@ -68,8 +69,8 @@ module CloudConductorCli
       desc 'delete SYSTEM_NAME', 'Delete system'
       def delete(system_name)
         id = find_id_by_name(:system, system_name)
+        error_exit('Specified record does not exist.') unless id
         response = connection.delete("/systems/#{id}")
-        error_exit('Specified system record does not exist.') if response.status == 404
         error_exit("Failed to delete system record. returns #{response.status}") unless response.success?
         display_message 'Delete completed successfully.'
       end
