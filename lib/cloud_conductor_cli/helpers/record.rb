@@ -80,7 +80,7 @@ module CloudConductorCli
           template_parameters = parameters.key?(pattern['name']) ? parameters[pattern['name']] : {}
           attributes = user_attributes.key?(pattern['name']) ? user_attributes[pattern['name']] : {}
           {
-            name: "#{options['name']}-#{pattern['name'].gsub(/_/, '-')}",
+            name: "#{options['name']}-#{pattern['name']}".gsub(/_/, '-'),
             pattern_id: pattern['id'],
             template_parameters: JSON.dump(template_parameters),
             parameters: JSON.dump(attributes)
