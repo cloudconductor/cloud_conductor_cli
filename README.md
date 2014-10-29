@@ -1,31 +1,61 @@
-# CloudConductorCli
+About
+=====
 
-CloudConductor command line tool to manage cloud systems and applications.
+cc-cli is Command Line Interface(CLI) for [CloudConductor](https://github.com/cloudconductor/cloud_conductor).
 
-## Installation
+For more information, please visit [official web site](http://cloudconductor.org/).
 
-Add this line to your application's Gemfile:
+Requirements
+============
 
-    gem 'cloud_conductor_cli', :git => 'git://github.com/cloudconductor/cloud_conductor_cli.git'
+Prerequisites
+-------------
 
-And then execute:
+- git
+- ruby (>= 2.0.0)
+- rubygems
+- bundler
 
-    $ bundle
+Quick Start
+===========
 
-Or install it yourself as:
+### Clone github repository and install
 
-    $ gem install cloud_conductor_cli
+```bash
+git clone https://github.com/cloudconductor/cloud_conductor.git
+bundle install
+bundle exec rake install
+```
 
-## Usage
+### Show usage
 
-See help command message.
+```bash
+cc-cli help
+```
 
-    $ cc-cli help
+Copyright and License
+=====================
 
-## Contributing
+Copyright 2014 TIS inc.
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+Contact
+========
+
+For more information: <http://cloudconductor.org/>
+
+Report issues and requests: <https://github.com/cloudconductor/cloud_conductor_cli/issues>
+
+Send feedback to: <ccndctr@gmail.com>
