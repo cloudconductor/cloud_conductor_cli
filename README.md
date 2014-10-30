@@ -3,7 +3,6 @@ About
 
 cc-cli is Command Line Interface(CLI) for [CloudConductor](https://github.com/cloudconductor/cloud_conductor).
 
-For more information, please visit [official web site](http://cloudconductor.org/).
 
 Requirements
 ============
@@ -32,6 +31,8 @@ bundle exec rake install
 ```bash
 cc-cli help
 ```
+
+For more information, please visit [official user manual](http://cloudconductor.org/documents/user-manual/conductor-cli). (Japanese only)
 
 Copyright and License
 =====================
