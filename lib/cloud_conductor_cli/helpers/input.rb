@@ -6,10 +6,7 @@ module CloudConductorCli
     module Input
       def input_template_parameters(pattern_names)
         parameters = pattern_parameters(pattern_names)
-        user_parameters = read_user_inputs(parameters)
-        # TODO: Fix API
-        # JSON.dump(user_parameters)
-        JSON.dump(user_parameters.first.last.merge('operating_system' => 'centos'))
+        read_user_inputs(parameters)
       end
 
       def read_user_inputs(parameters)
