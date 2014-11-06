@@ -105,7 +105,7 @@ module CloudConductorCli
           'eu-west-1' => 'ami-9210bee5',
           'eu-central-1' => 'ami-bc0234a1',
           'sa-east-1' => 'ami-ab0fbbb6',
-          'us-east-1' => 'ami-5452d53c',
+          'us-east-1' => 'ami-74da531c',
           'us-west-1' => 'ami-5940541c',
           'us-west-2' => 'ami-575c1267'
         }
