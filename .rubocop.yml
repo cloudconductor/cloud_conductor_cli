@@ -14,3 +14,5 @@ PerceivedComplexity:
   Max: 10
 Documentation:
   Enabled: false
+Style/RegexpLiteral:
+  MaxSlashes: 0
