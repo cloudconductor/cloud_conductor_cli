@@ -16,3 +16,5 @@ Documentation:
   Enabled: false
 Style/RegexpLiteral:
   MaxSlashes: 0
+AbcSize:
+  Enabled: false
