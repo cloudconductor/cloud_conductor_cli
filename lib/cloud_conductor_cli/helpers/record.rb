@@ -55,13 +55,13 @@ module CloudConductorCli
       end
 
       def clouds_with_priority(cloud_names)
-        clouds = select_by_names(:cloud, cloud_names)
-        clouds.map do |cloud|
+        clouds = cloud_names.map.with_index do |cloud_name, index|
           {
-            id: cloud['id'],
-            priority: (clouds.size - clouds.index(cloud)) * 10
+            id: find_id_by_name(:cloud, cloud_name),
+            priority: (cloud_names.size - index) * 10
           }
         end
+        clouds.reject { |cloud| cloud[:id].nil? }
       end
 
       def stacks(options)
