@@ -203,8 +203,9 @@ module CloudConductorCli
 
       describe '#clouds_with_priority' do
         before do
-          clouds = [{ 'id' => 1, 'name' => 'OpenStack' }, { 'id' => 2, 'name' => 'AWS' }]
-          @record.stub(:select_by_names).and_return(clouds)
+          @record.stub(:find_id_by_name).and_return(nil)
+          @record.stub(:find_id_by_name).with(:cloud, 'OpenStack').and_return(1)
+          @record.stub(:find_id_by_name).with(:cloud, 'AWS').and_return(2)
         end
 
         it 'return clouds hash that set the priority ' do
@@ -219,6 +220,23 @@ module CloudConductorCli
           results = @record.clouds_with_priority(%w(OpenStack AWS))
 
           expect(results.first[:priority] > results.last[:priority]).to eq(true)
+        end
+
+        it 'calculate priority by order of argument when clouds table has different order' do
+          results = @record.clouds_with_priority(%w(AWS OpenStack))
+
+          expect(results.first[:priority] > results.last[:priority]).to eq(true)
+
+          expect(results[0][:id]).to eq(2)
+          expect(results[1][:id]).to eq(1)
+        end
+
+        it 'excludes record that does not exist' do
+          results = @record.clouds_with_priority(%w(OpenStack DummyCloud AWS))
+
+          expect(results.size).to eq(2)
+          expect(results[0][:id]).to eq(1)
+          expect(results[1][:id]).to eq(2)
         end
       end
 
