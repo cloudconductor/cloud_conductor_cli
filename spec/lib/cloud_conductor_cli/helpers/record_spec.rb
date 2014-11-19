@@ -312,7 +312,7 @@ module CloudConductorCli
           expect(@record.source_image(options)).to eq('ami-ab0fbbb6')
 
           options['entry_point'] = 'us-east-1'
-          expect(@record.source_image(options)).to eq('ami-5452d53c')
+          expect(@record.source_image(options)).to eq('ami-74da531c')
 
           options['entry_point'] = 'us-west-1'
           expect(@record.source_image(options)).to eq('ami-5940541c')
