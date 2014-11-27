@@ -1,5 +1,3 @@
-require 'pry'
-
 module CloudConductorCli
   module Models
     describe Cloud do

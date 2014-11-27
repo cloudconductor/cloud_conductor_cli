@@ -7,6 +7,7 @@
 require 'active_support'
 require 'rubygems'
 require 'spork'
+require 'pry'
 
 ActiveSupport::Dependencies.autoload_paths << File.expand_path('../lib', File.dirname(__FILE__))
 

@@ -1,5 +1,3 @@
-require 'stringio'
-
 module CloudConductorCli
   module Helpers
     describe Output do

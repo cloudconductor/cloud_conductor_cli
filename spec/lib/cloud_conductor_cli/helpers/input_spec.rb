@@ -1,5 +1,3 @@
-require 'pry'
-
 module CloudConductorCli
   module Helpers
     describe Input do
