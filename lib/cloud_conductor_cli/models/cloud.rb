@@ -33,7 +33,7 @@ module CloudConductorCli
       def create
         payload_keys = %w(name type entry_point key secret tenant_name)
         payload = options.select { |k, _v| payload_keys.include?(k) }
-        payload[:targets] = targets(options)
+        payload['targets'] = targets(options)
         response = connection.post('/clouds', payload)
         error_exit("Failed to register cloud. returns #{response.status}", response) unless response.success?
         display_message 'Register completed successfully.'

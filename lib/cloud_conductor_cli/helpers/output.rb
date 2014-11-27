@@ -1,4 +1,5 @@
 require 'formatador'
+require 'json'
 
 module CloudConductorCli
   module Helpers

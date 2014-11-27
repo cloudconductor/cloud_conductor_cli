@@ -18,7 +18,7 @@ module CloudConductorCli
             'User-Agent' => "CloudConductor CLI v#{VERSION}",
             'Accept' => 'application/json'
           }
-          @connection = Faraday.new(url: @cc_url, headers: default_headers) do |builder|
+          @faraday = Faraday.new(url: @cc_url, headers: default_headers) do |builder|
             builder.request :url_encoded
             builder.adapter :net_http
           end
@@ -45,7 +45,7 @@ module CloudConductorCli
 
       def request(method, path, payload = {})
         begin
-          response = @connection.send(method, path, payload)
+          response = @faraday.send(method, path, payload)
         rescue Faraday::ConnectionFailed
           error_exit("Failed to connect #{@cc_url}.")
         rescue => e
