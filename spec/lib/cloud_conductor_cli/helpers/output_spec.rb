@@ -29,7 +29,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'display_list' do
+      describe '#display_list' do
         before do
           @output.stub(:display_message)
           @output.stub(:filter) { |data, _exclude_keys| data }
@@ -55,7 +55,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'display_details' do
+      describe '#display_details' do
         before do
           @output.stub(:filter) { |data, _exclude_keys| data }
           @output.stub(:verticalize) { |data, _exclude_keys| data }
@@ -81,7 +81,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'verticalize' do
+      describe '#verticalize' do
         it 'return arg if data is not hash' do
           expect(@output.verticalize('dummy')).to eq('dummy')
         end
@@ -95,7 +95,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'filter' do
+      describe '#filter' do
         before do
         end
 
@@ -121,7 +121,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'error_exit' do
+      describe '#error_exit' do
         before do
           @output.stub(:warn)
           @output.stub(:exit)
@@ -154,7 +154,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'normal_exit' do
+      describe '#normal_exit' do
         before do
           @output.stub(:display_message)
           @output.stub(:exit)

@@ -67,7 +67,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'get' do
+      describe '#get' do
         it 'call CloudConductor GET API through request method' do
           @connection.should_receive(:request).with(:get, '/dummy/get/path')
 
@@ -75,7 +75,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'post' do
+      describe '#post' do
         it 'call CloudConductor POST API through request method' do
           @connection.should_receive(:request).with(:post, '/dummy/post/path', dummy_key: 'dummy_name')
 
@@ -83,7 +83,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'put' do
+      describe '#put' do
         it 'call CloudConductor PUT API through request method' do
           @connection.should_receive(:request).with(:put, '/dummy/put/path', dummy_key: 'dummy_name')
 
@@ -91,7 +91,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'delete' do
+      describe '#delete' do
         it 'call CloudConductor DELETE API through request method' do
           @connection.should_receive(:request).with(:delete, '/dummy/delete/path')
 
@@ -99,7 +99,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'request' do
+      describe '#request' do
         it 'call error_exit if raise faraday connection failed' do
           @stubs.get('/dummy/get/path') { fail Faraday::ConnectionFailed, 'Dummy Fail' }
           @connection.should_receive(:error_exit).with('Failed to connect http://127.0.0.1:9999/.')

@@ -27,7 +27,7 @@ module CloudConductorCli
         end
       end
 
-      describe 'read_user_inputs' do
+      describe '#read_user_inputs' do
         before do
           @input.stub(:display_message)
           @input.stub(:validate_parameter).and_return(true)
