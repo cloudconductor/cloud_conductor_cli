@@ -269,61 +269,8 @@ module CloudConductorCli
       end
 
       describe '#targets' do
-        before do
-          @record.stub(:source_image).and_return('ami-12345678')
-        end
-
-        it 'call source_image methods ' do
-          options = { type: 'aws', entry_point: 'ap-northeast-1' }
-          @record.should_receive(:source_image).with(options)
-
-          @record.targets options
-        end
-
         it 'return parameters ' do
-          options = { 'type' => 'aws', 'entry_point' => 'ap-northeast-1' }
-
-          expect(@record.targets options).to eq([{ operating_system_id: 1, source_image: 'ami-12345678', ssh_username: 'ec2-user' }])
-        end
-      end
-
-      describe '#source_image' do
-        it 'return base image ID on aws if type is aws' do
-          options = {}
-          options['type'] = 'aws'
-          options['entry_point'] = 'ap-northeast-1'
-          expect(@record.source_image(options)).to eq('ami-9b4b789a')
-
-          options['entry_point'] = 'ap-southeast-1'
-          expect(@record.source_image(options)).to eq('ami-0eb7965c')
-
-          options['entry_point'] = 'ap-southeast-2'
-          expect(@record.source_image(options)).to eq('ami-c50864ff')
-
-          options['entry_point'] = 'eu-west-1'
-          expect(@record.source_image(options)).to eq('ami-9210bee5')
-
-          options['entry_point'] = 'eu-central-1'
-          expect(@record.source_image(options)).to eq('ami-bc0234a1')
-
-          options['entry_point'] = 'sa-east-1'
-          expect(@record.source_image(options)).to eq('ami-ab0fbbb6')
-
-          options['entry_point'] = 'us-east-1'
-          expect(@record.source_image(options)).to eq('ami-74da531c')
-
-          options['entry_point'] = 'us-west-1'
-          expect(@record.source_image(options)).to eq('ami-5940541c')
-
-          options['entry_point'] = 'us-west-2'
-          expect(@record.source_image(options)).to eq('ami-575c1267')
-        end
-
-        it 'return base image ID on OpenStack if type is openstack' do
-          options = {}
-          options['type'] = 'openstack'
-          options['base_image_id'] = 'dummy_id'
-          expect(@record.source_image(options)).to eq('dummy_id')
+          expect(@record.targets).to eq([{ operating_system_id: 1, ssh_username: 'ec2-user' }])
         end
       end
     end
