@@ -111,6 +111,13 @@ module CloudConductorCli
           results = @input.read_user_inputs(parameters)
           expect(results).to eq(expected_result)
         end
+
+        it 'callexit when forced termination' do
+          @input.should_receive(:exit)
+          Readline.stub(:readline).and_raise(Interrupt)
+
+          @input.read_user_inputs(@parameters)
+        end
       end
     end
   end
