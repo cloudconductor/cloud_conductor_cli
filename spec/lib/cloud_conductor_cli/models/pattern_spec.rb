@@ -111,7 +111,6 @@ module CloudConductorCli
         before do
           response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
           @pattern.stub_chain(:connection, :post).and_return(response)
-          @pattern.stub(:targets).and_return(['dummy_target'])
           @pattern.stub(:display_message)
           @pattern.stub(:display_details)
           @options = { 'url' => 'http://example.com/dummy', 'revision' => 'master' }

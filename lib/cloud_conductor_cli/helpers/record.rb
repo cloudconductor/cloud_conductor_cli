@@ -87,13 +87,6 @@ module CloudConductorCli
           }
         end
       end
-
-      def targets
-        [{
-          operating_system_id: 1,
-          ssh_username: 'ec2-user'
-        }]
-      end
     end
   end
 end
