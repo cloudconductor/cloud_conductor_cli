@@ -17,5 +17,5 @@ group :test do
   gem 'guard'
   gem 'guard-rubocop'
   gem 'guard-rspec', require: false
-  gem 'guard-spork'
+  gem 'guard-spork', '~>2.0'
 end
