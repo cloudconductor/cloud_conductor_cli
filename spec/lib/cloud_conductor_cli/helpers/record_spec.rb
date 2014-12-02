@@ -267,12 +267,6 @@ module CloudConductorCli
           expect(@record.stacks option).to eq(expected_result)
         end
       end
-
-      describe '#targets' do
-        it 'return parameters ' do
-          expect(@record.targets).to eq([{ operating_system_id: 1, ssh_username: 'ec2-user' }])
-        end
-      end
     end
   end
 end

@@ -76,7 +76,6 @@ module CloudConductorCli
         before do
           response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
           @cloud.stub_chain(:connection, :post).and_return(response)
-          @cloud.stub(:targets).and_return(['dummy_target'])
           @cloud.stub(:display_message)
           @cloud.stub(:display_details)
           @options = {
@@ -108,10 +107,24 @@ module CloudConductorCli
             'type' => 'dummy_type',
             'entry_point' => 'dummy_entry_point',
             'key' => 'dummy_key',
-            'secret' => 'dummy_secret',
-            'targets' => ['dummy_target']
+            'secret' => 'dummy_secret'
           }
           @cloud.connection.should_receive(:post).with('/clouds', payload)
+
+          @cloud.create
+        end
+
+        it 'call connection#post' do
+          @options = {
+            'name' => 'dummy_name',
+            'type' => 'dummy_type',
+            'entry_point' => 'dummy_entry_point',
+            'key' => 'dummy_key',
+            'secret' => 'dummy_secret',
+            'tenant_name' => 'dummy_tenant_name',
+            'base_image_id' => 'dummy_base_image'
+          }
+          @cloud.connection.should_receive(:post).with('/clouds', @options)
 
           @cloud.create
         end
