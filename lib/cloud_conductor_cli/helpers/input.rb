@@ -23,6 +23,9 @@ module CloudConductorCli
             inputs[key_name] = input
           end
         end
+      rescue Interrupt
+        display_message "\n"
+        exit
       end
     end
   end
