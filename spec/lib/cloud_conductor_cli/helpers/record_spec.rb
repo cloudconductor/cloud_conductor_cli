@@ -6,12 +6,12 @@ module CloudConductorCli
         @record.extend(Record)
 
         @options = { host: 'localhost', port: 9292 }
-        @record.stub(:options).and_return(@options)
+        allow(@record).to receive(:options).and_return(@options)
       end
 
       describe '#connection' do
         it 'call Connection new methods' do
-          Connection.should_receive(:new).with('localhost', 9292)
+          expect(Connection).to receive(:new).with('localhost', 9292)
           @record.connection
         end
 
@@ -23,17 +23,17 @@ module CloudConductorCli
       describe '#list_records' do
         before do
           response = double(:response, body: '{ "dummy_key": "dummy_value" }')
-          @record.stub_chain(:connection, :get).and_return(response)
+          allow(@record).to receive_message_chain(:connection, :get).and_return(response)
         end
 
         it 'call connection if parent_model is not nil' do
-          @record.connection.should_receive(:get).with('/systems/1/applications')
+          expect(@record.connection).to receive(:get).with('/systems/1/applications')
 
           @record.list_records(:application, parent_model: :system, parent_id: 1)
         end
 
         it 'call connection if parent_model is nil' do
-          @record.connection.should_receive(:get).with('/clouds')
+          expect(@record.connection).to receive(:get).with('/clouds')
 
           @record.list_records(:cloud)
         end
@@ -46,11 +46,11 @@ module CloudConductorCli
       describe '#find_id_by_name' do
         before do
           records = [{ 'id' => 1, 'name' => 'dummy_name' }, { 'id' => 2 }]
-          @record.stub(:list_records).and_return(records)
+          allow(@record).to receive(:list_records).and_return(records)
         end
 
         it 'call list_records' do
-          @record.should_receive(:list_records).with(:cloud, parent_model: nil, parent_id: nil)
+          expect(@record).to receive(:list_records).with(:cloud, parent_model: nil, parent_id: nil)
 
           @record.find_id_by_name(:cloud, 'dummy_name')
         end
@@ -71,11 +71,11 @@ module CloudConductorCli
       describe '#select_by_names' do
         before do
           records = [{ 'id' => 1, 'name' => 'dummy_name1' }, { 'id' => 2, 'name' => 'dummy_name2' }]
-          @record.stub(:list_records).and_return(records)
+          allow(@record).to receive(:list_records).and_return(records)
         end
 
         it 'call list_records' do
-          @record.should_receive(:list_records)
+          expect(@record).to receive(:list_records)
 
           @record.select_by_names(:cloud, ['dummy_name1'])
         end
@@ -104,24 +104,24 @@ module CloudConductorCli
       describe '#pattern_parameters' do
         before do
           @pattern_names = ['dummy_pattern_1']
-          @record.stub(:find_id_by_name).with(:pattern, 'dummy_pattern_1').and_return(1)
-          @record.stub(:find_id_by_name).with(:pattern, 'dummy_pattern_2').and_return(nil)
-          @record.stub(:find_id_by_name).with(:pattern, 'dummy_pattern_3').and_return(3)
+          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_1').and_return(1)
+          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_2').and_return(nil)
+          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_3').and_return(3)
 
           response1 = double(:response, body: '{ "dummy_key": "dummy_value_1" }')
           response2 = double(:response, body: '{ "dummy_key": "dummy_value_3" }')
-          @record.stub_chain(:connection, :get).with('/patterns/1/parameters').and_return(response1)
-          @record.stub_chain(:connection, :get).with('/patterns/3/parameters').and_return(response2)
+          allow(@record).to receive_message_chain(:connection, :get).with('/patterns/1/parameters').and_return(response1)
+          allow(@record).to receive_message_chain(:connection, :get).with('/patterns/3/parameters').and_return(response2)
         end
 
         it 'call find_id_by_name' do
-          @record.should_receive(:find_id_by_name).with(:pattern, 'dummy_pattern_1')
+          expect(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_1')
 
           @record.pattern_parameters @pattern_names
         end
 
         it 'call connection get ' do
-          @record.connection.should_receive(:get).with('/patterns/1/parameters')
+          expect(@record.connection).to receive(:get).with('/patterns/1/parameters')
 
           @record.pattern_parameters @pattern_names
         end
@@ -201,9 +201,9 @@ module CloudConductorCli
 
       describe '#clouds_with_priority' do
         before do
-          @record.stub(:find_id_by_name).and_return(nil)
-          @record.stub(:find_id_by_name).with(:cloud, 'OpenStack').and_return(1)
-          @record.stub(:find_id_by_name).with(:cloud, 'AWS').and_return(2)
+          allow(@record).to receive(:find_id_by_name).and_return(nil)
+          allow(@record).to receive(:find_id_by_name).with(:cloud, 'OpenStack').and_return(1)
+          allow(@record).to receive(:find_id_by_name).with(:cloud, 'AWS').and_return(2)
         end
 
         it 'return clouds hash that set the priority ' do
@@ -240,13 +240,13 @@ module CloudConductorCli
 
       describe '#stacks' do
         before do
-          @record.stub(:input_template_parameters).and_return('dummy_pattern' => { 'dummy_key' => 'dummy_value' })
-          @record.stub(:select_by_names).and_return([{ 'id' => 1, 'name' => 'dummy_pattern_name' }])
+          allow(@record).to receive(:input_template_parameters).and_return('dummy_pattern' => { 'dummy_key' => 'dummy_value' })
+          allow(@record).to receive(:select_by_names).and_return([{ 'id' => 1, 'name' => 'dummy_pattern_name' }])
 
           dummy_parameter = '{ "dummy_pattern_name": { "dummy_key": "dummy_value" }}'
-          File.stub(:read).with('dummy_parameter_file.json').and_return(dummy_parameter)
+          allow(File).to receive(:read).with('dummy_parameter_file.json').and_return(dummy_parameter)
           dummy_user_attribute = '{ "dummy_pattern_name": { "dummy_attribute": "dummy_attribute_value" } }'
-          File.stub(:read).with('dummy_user_attribute_file.json').and_return(dummy_user_attribute)
+          allow(File).to receive(:read).with('dummy_user_attribute_file.json').and_return(dummy_user_attribute)
         end
 
         it 'return parameters that required to create stack' do
