@@ -7,7 +7,7 @@ module CloudConductorCli
         @stubs  = Faraday::Adapter::Test::Stubs.new
 
         original_method = Faraday.method(:new)
-        Faraday.stub(:new) do |*args, &block|
+        allow(Faraday).to receive(:new) do |*args, &block|
           original_method.call(*args) do |builder|
             builder.adapter :test, @stubs
             yield block if block_given?
@@ -15,12 +15,12 @@ module CloudConductorCli
         end
 
         @connection = Connection.new('127.0.0.1', 9999)
-        Connection.any_instance.stub(:error_exit)
+        allow_any_instance_of(Connection).to receive(:error_exit)
       end
 
       describe '#initialize' do
         it 'call error_exit if host does not spacified by argument and environment variables' do
-          Connection.any_instance.should_receive(:error_exit)
+          expect_any_instance_of(Connection).to receive(:error_exit)
 
           ENV['CC_HOST'] = nil
           Connection.new(nil)
@@ -45,20 +45,20 @@ module CloudConductorCli
         end
 
         it 'instanciate Faraday with url and headers' do
-          Faraday.should_receive(:new).with(url: 'http://127.0.0.1:9999/', headers: kind_of(Hash))
+          expect(Faraday).to receive(:new).with(url: 'http://127.0.0.1:9999/', headers: kind_of(Hash))
 
           Connection.new('127.0.0.1', 9999)
         end
 
         it 'call error_exit if url is invalid' do
-          Connection.any_instance.should_receive(:error_exit)
-          Faraday.stub(:new).and_raise(URI::InvalidURIError)
+          expect_any_instance_of(Connection).to receive(:error_exit)
+          allow(Faraday).to receive(:new).and_raise(URI::InvalidURIError)
 
           Connection.new('127.0.0.1', 9999)
         end
 
         it 'keep instance of Faraday::Connection' do
-          Faraday.unstub(:new)
+          allow(Faraday).to receive(:new).and_call_original
           connection = Connection.new('127.0.0.1', 9999)
           faraday = connection.instance_variable_get('@faraday')
 
@@ -68,7 +68,7 @@ module CloudConductorCli
 
       describe '#get' do
         it 'call CloudConductor GET API through request method' do
-          @connection.should_receive(:request).with(:get, '/dummy/get/path')
+          expect(@connection).to receive(:request).with(:get, '/dummy/get/path')
 
           @connection.get '/dummy/get/path'
         end
@@ -76,7 +76,7 @@ module CloudConductorCli
 
       describe '#post' do
         it 'call CloudConductor POST API through request method' do
-          @connection.should_receive(:request).with(:post, '/dummy/post/path', dummy_key: 'dummy_name')
+          expect(@connection).to receive(:request).with(:post, '/dummy/post/path', dummy_key: 'dummy_name')
 
           @connection.post('/dummy/post/path', dummy_key: 'dummy_name')
         end
@@ -84,7 +84,7 @@ module CloudConductorCli
 
       describe '#put' do
         it 'call CloudConductor PUT API through request method' do
-          @connection.should_receive(:request).with(:put, '/dummy/put/path', dummy_key: 'dummy_name')
+          expect(@connection).to receive(:request).with(:put, '/dummy/put/path', dummy_key: 'dummy_name')
 
           @connection.put('/dummy/put/path', dummy_key: 'dummy_name')
         end
@@ -92,7 +92,7 @@ module CloudConductorCli
 
       describe '#delete' do
         it 'call CloudConductor DELETE API through request method' do
-          @connection.should_receive(:request).with(:delete, '/dummy/delete/path')
+          expect(@connection).to receive(:request).with(:delete, '/dummy/delete/path')
 
           @connection.delete '/dummy/delete/path'
         end
@@ -101,14 +101,14 @@ module CloudConductorCli
       describe '#request' do
         it 'call error_exit if raise faraday connection failed' do
           @stubs.get('/dummy/get/path') { fail Faraday::ConnectionFailed, 'Dummy Fail' }
-          @connection.should_receive(:error_exit).with('Failed to connect http://127.0.0.1:9999/.')
+          expect(@connection).to receive(:error_exit).with('Failed to connect http://127.0.0.1:9999/.')
 
           @connection.request(:get, '/dummy/get/path')
         end
 
         it 'call error_exit if raise other error' do
           @stubs.get('/dummy/get/path') { fail 'Dummy Fail' }
-          @connection.should_receive(:error_exit).with('UnexpectedError: RuntimeError Dummy Fail.')
+          expect(@connection).to receive(:error_exit).with('UnexpectedError: RuntimeError Dummy Fail.')
 
           @connection.request(:get, '/dummy/get/path')
         end

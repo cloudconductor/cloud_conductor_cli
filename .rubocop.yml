@@ -5,7 +5,7 @@ AllCops:
     - 'vendor/bundle/**/*'
     - 'tmp/**/*'
 LineLength:
-  Max: 140
+  Enabled: false
 MethodLength:
   Max: 30
 CyclomaticComplexity:

@@ -8,18 +8,18 @@ module CloudConductorCli
 
       describe '#input_template_parameters' do
         before do
-          @input.stub(:pattern_parameters).and_return({})
-          @input.stub(:read_user_inputs).and_return([])
+          allow(@input).to receive(:pattern_parameters).and_return({})
+          allow(@input).to receive(:read_user_inputs).and_return([])
         end
 
         it 'call pattern_parameters' do
-          @input.should_receive(:pattern_parameters).with(['dummy_pattern_name']).and_return({})
+          expect(@input).to receive(:pattern_parameters).with(['dummy_pattern_name']).and_return({})
 
           @input.input_template_parameters(['dummy_pattern_name'])
         end
 
         it 'call read_user_inputs' do
-          @input.should_receive(:read_user_inputs).with({}).and_return([[]])
+          expect(@input).to receive(:read_user_inputs).with({}).and_return([[]])
 
           @input.input_template_parameters(['dummy_pattern_name'])
         end
@@ -27,9 +27,9 @@ module CloudConductorCli
 
       describe '#read_user_inputs' do
         before do
-          @input.stub(:display_message)
-          @input.stub(:validate_parameter).and_return(true)
-          Readline.stub(:readline).and_return('dummy_input')
+          allow(@input).to receive(:display_message)
+          allow(@input).to receive(:validate_parameter).and_return(true)
+          allow(Readline).to receive(:readline).and_return('dummy_input')
 
           @parameters = {
             'dummy_pattern_name' => {
@@ -42,28 +42,28 @@ module CloudConductorCli
         end
 
         it 'call display_message' do
-          @input.should_receive(:display_message).with('Input dummy_pattern_name Parameters')
-          @input.should_receive(:display_message).with('dummy_params: dummy_description', indent_level: 1)
+          expect(@input).to receive(:display_message).with('Input dummy_pattern_name Parameters')
+          expect(@input).to receive(:display_message).with('dummy_params: dummy_description', indent_level: 1)
 
           @input.read_user_inputs(@parameters)
         end
 
         it 'call validate_parameter' do
           options = { 'Description' => 'dummy_description', 'Default' => 'dummy_default' }
-          @input.should_receive(:validate_parameter).with(options, 'dummy_input')
+          expect(@input).to receive(:validate_parameter).with(options, 'dummy_input')
 
           @input.read_user_inputs(@parameters)
         end
 
         it 'does loop processing while validate_parameter is return false' do
-          @input.stub(:validate_parameter).and_return(false, false, false, true)
-          @input.should_receive(:validate_parameter).exactly(4).times
+          allow(@input).to receive(:validate_parameter).and_return(false, false, false, true)
+          expect(@input).to receive(:validate_parameter).exactly(4).times
 
           @input.read_user_inputs(@parameters)
         end
 
         it 'call readline' do
-          Readline.should_receive(:readline).with('  Default [dummy_default] > ')
+          expect(Readline).to receive(:readline).with('  Default [dummy_default] > ')
 
           @input.read_user_inputs(@parameters)
         end
@@ -80,7 +80,7 @@ module CloudConductorCli
         end
 
         it 'use default value if input value is nil and default value is not nil' do
-          Readline.stub(:readline).and_return(nil)
+          allow(Readline).to receive(:readline).and_return(nil)
           expected_result = {
             'dummy_pattern_name' => {
               'dummy_params' => 'dummy_default'
@@ -92,7 +92,7 @@ module CloudConductorCli
         end
 
         it 'nil if input value is nil and  default value is nil' do
-          Readline.stub(:readline).and_return(nil)
+          allow(Readline).to receive(:readline).and_return(nil)
 
           parameters = {
             'dummy_pattern_name' => {
@@ -113,8 +113,8 @@ module CloudConductorCli
         end
 
         it 'callexit when forced termination' do
-          @input.should_receive(:exit)
-          Readline.stub(:readline).and_raise(Interrupt)
+          expect(@input).to receive(:exit)
+          allow(Readline).to receive(:readline).and_raise(Interrupt)
 
           @input.read_user_inputs(@parameters)
         end
