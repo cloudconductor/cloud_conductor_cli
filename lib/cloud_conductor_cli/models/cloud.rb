@@ -31,9 +31,8 @@ module CloudConductorCli
       method_option :tenant_name,   type: :string, desc: '(OpenStack) OpenStack tenant name'
       method_option :base_image_id, type: :string, desc: '(OpenStack) Base image id'
       def create
-        payload_keys = %w(name type entry_point key secret tenant_name)
+        payload_keys = %w(name type entry_point key secret tenant_name base_image_id)
         payload = options.select { |k, _v| payload_keys.include?(k) }
-        payload[:targets] = targets(options)
         response = connection.post('/clouds', payload)
         error_exit("Failed to register cloud. returns #{response.status}", response) unless response.success?
         display_message 'Register completed successfully.'

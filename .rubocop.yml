@@ -5,7 +5,7 @@ AllCops:
     - 'vendor/bundle/**/*'
     - 'tmp/**/*'
 LineLength:
-  Max: 140
+  Enabled: false
 MethodLength:
   Max: 30
 CyclomaticComplexity:
@@ -13,4 +13,8 @@ CyclomaticComplexity:
 PerceivedComplexity:
   Max: 10
 Documentation:
+  Enabled: false
+Style/RegexpLiteral:
+  MaxSlashes: 0
+AbcSize:
   Enabled: false

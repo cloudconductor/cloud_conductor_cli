@@ -87,35 +87,6 @@ module CloudConductorCli
           }
         end
       end
-
-      def targets(options)
-        [{
-          operating_system_id: 1,
-          source_image: source_image(options),
-          ssh_username: 'ec2-user'
-        }]
-      end
-
-      def source_image(options)
-        # TODO: Fix CloudConductor Server
-        aws_base_images = {
-          'ap-northeast-1' => 'ami-9b4b789a',
-          'ap-southeast-1' => 'ami-0eb7965c',
-          'ap-southeast-2' => 'ami-c50864ff',
-          'eu-west-1' => 'ami-9210bee5',
-          'eu-central-1' => 'ami-bc0234a1',
-          'sa-east-1' => 'ami-ab0fbbb6',
-          'us-east-1' => 'ami-74da531c',
-          'us-west-1' => 'ami-5940541c',
-          'us-west-2' => 'ami-575c1267'
-        }
-        case options['type']
-        when 'aws'
-          aws_base_images[options['entry_point']]
-        when 'openstack'
-          options['base_image_id']
-        end
-      end
     end
   end
 end
