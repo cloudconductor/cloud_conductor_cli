@@ -8,11 +8,14 @@ module CloudConductorCli
       let(:mock_project) { { id: 1, name: 'project_name', description: 'project_description' } }
 
       before do
+        allow(Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(record).to receive(:options).and_return({})
       end
 
       describe '#connection' do
         it 'returns Connection instance' do
+          allow(Connection).to receive(:new).and_call_original
+          allow_any_instance_of(Connection).to receive(:get_auth_token).and_return('some_auth_token')
           expect(record.connection).to be_instance_of(Connection)
         end
       end

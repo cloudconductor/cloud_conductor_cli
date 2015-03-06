@@ -16,6 +16,7 @@ module CloudConductorCli
       end
 
       before do
+        allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(base_image).to receive(:find_id_by).with(:base_image, :source_image, anything).and_return(mock_base_image[:id])
         allow(base_image).to receive(:find_id_by).with(:cloud, :name, anything).and_return(1)
         allow(base_image).to receive(:display_message)

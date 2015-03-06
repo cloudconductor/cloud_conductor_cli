@@ -14,6 +14,7 @@ module CloudConductorCli
       end
 
       before do
+        allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(project).to receive(:find_id_by).with(:project, :name, anything).and_return(mock_project[:id])
         allow(project).to receive(:display_message)
         allow(project).to receive(:display_list)

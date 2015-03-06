@@ -19,6 +19,7 @@ module CloudConductorCli
       end
 
       before do
+        allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(environment).to receive(:find_id_by).with(:environment, :name, anything).and_return(mock_environment[:id])
         allow(environment).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
         allow(environment).to receive(:find_id_by).with(:blueprint, :name, anything).and_return(1)

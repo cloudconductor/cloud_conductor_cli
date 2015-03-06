@@ -15,6 +15,7 @@ module CloudConductorCli
       end
 
       before do
+        allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(blueprint).to receive(:find_id_by).with(:blueprint, :name, anything).and_return(mock_blueprint[:id])
         allow(blueprint).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(blueprint).to receive(:display_message)
