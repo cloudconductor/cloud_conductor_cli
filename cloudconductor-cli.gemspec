@@ -26,4 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'formatador'
   spec.add_dependency 'rb-readline'
   spec.add_dependency 'faraday'
+  spec.add_dependency 'rack'
 end

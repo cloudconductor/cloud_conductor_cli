@@ -3,123 +3,132 @@ require 'faraday'
 module CloudConductorCli
   module Helpers
     describe Connection do
+      let(:connection) { Connection.new }
+
       before do
-        @stubs  = Faraday::Adapter::Test::Stubs.new
-
-        original_method = Faraday.method(:new)
-        allow(Faraday).to receive(:new) do |*args, &block|
-          original_method.call(*args) do |builder|
-            builder.adapter :test, @stubs
-            yield block if block_given?
-          end
-        end
-
-        @connection = Connection.new('127.0.0.1', 9999)
-        allow_any_instance_of(Connection).to receive(:error_exit)
+        allow(ENV).to receive(:[]).with('CC_HOST').and_return('127.0.0.1')
+        allow(ENV).to receive(:[]).with('CC_PORT').and_return(3000)
+        allow(ENV).to receive(:[]).with('CC_AUTH_ID').and_return('test@example.com')
+        allow(ENV).to receive(:[]).with('CC_AUTH_PASSWORD').and_return('password')
+        allow(ENV).to receive(:[]).with('http_proxy').and_return(nil)
+        allow_any_instance_of(Connection).to receive(:get_auth_token).and_return('some_auth_token')
+        allow_any_instance_of(Connection).to receive(:error_exit).and_raise(SystemExit)
       end
 
       describe '#initialize' do
-        it 'call error_exit if host does not spacified by argument and environment variables' do
-          expect_any_instance_of(Connection).to receive(:error_exit)
+        context 'without environment variables' do
+          it 'error_exit when called without valid host' do
+            allow(ENV).to receive(:[]).with('CC_HOST').and_return(nil)
+            allow(ENV).to receive(:[]).with('CC_PORT').and_return(nil)
+            expect_any_instance_of(Connection).to receive(:error_exit).with(String)
+            expect { Connection.new }.to raise_error(SystemExit)
+          end
 
-          ENV['CC_HOST'] = nil
-          Connection.new(nil)
+          it 'error_exit when called without CC_AUTH_ID environment variable' do
+            allow(ENV).to receive(:[]).with('CC_AUTH_ID').and_return(nil)
+            expect_any_instance_of(Connection).to receive(:error_exit)
+            expect { Connection.new }.to raise_error(SystemExit)
+          end
+
+          it 'error_exit when called without CC_AUTH_PASSWORD environment variable' do
+            allow(ENV).to receive(:[]).with('CC_AUTH_PASSWORD').and_return(nil)
+            expect_any_instance_of(Connection).to receive(:error_exit)
+            expect { Connection.new }.to raise_error(SystemExit)
+          end
+
+          it 'success when called with valid host' do
+            new_connection = Connection.new('127.0.0.1', 3000)
+            expect(new_connection.faraday.url_prefix.to_s).to eq('http://127.0.0.1:3000/')
+            expect(new_connection.api_prefix).to eq('/api/v1')
+            expect(new_connection.auth_token).not_to be_empty
+          end
         end
 
-        it 'create url from environment variables' do
-          ENV['CC_HOST'] = 'localhost'
-          ENV['CC_PORT'] = '10000'
-          connection = Connection.new(nil)
-          url = connection.instance_variable_get('@cc_url')
+        context 'with environment variables' do
+          it 'success when called without valid host' do
+            new_connection = Connection.new
+            expect(new_connection.faraday.url_prefix.to_s).to eq('http://127.0.0.1:3000/')
+            expect(new_connection.api_prefix).to eq('/api/v1')
+            expect(new_connection.auth_token).not_to be_empty
+          end
 
-          expect(url).to eq('http://localhost:10000/')
-        end
-
-        it 'create url from arguments' do
-          ENV['CC_HOST'] = 'localhost'
-          ENV['CC_PORT'] = '10000'
-          connection = Connection.new('127.0.0.1', 9999)
-          url = connection.instance_variable_get('@cc_url')
-
-          expect(url).to eq('http://127.0.0.1:9999/')
-        end
-
-        it 'instanciate Faraday with url and headers' do
-          expect(Faraday).to receive(:new).with(url: 'http://127.0.0.1:9999/', headers: kind_of(Hash))
-
-          Connection.new('127.0.0.1', 9999)
-        end
-
-        it 'call error_exit if url is invalid' do
-          expect_any_instance_of(Connection).to receive(:error_exit)
-          allow(Faraday).to receive(:new).and_raise(URI::InvalidURIError)
-
-          Connection.new('127.0.0.1', 9999)
-        end
-
-        it 'keep instance of Faraday::Connection' do
-          allow(Faraday).to receive(:new).and_call_original
-          connection = Connection.new('127.0.0.1', 9999)
-          faraday = connection.instance_variable_get('@faraday')
-
-          expect(faraday).to be_is_a(Faraday::Connection)
+          it 'success and use specified host when called with host' do
+            new_connection = Connection.new('localhost', 4000)
+            expect(new_connection.faraday.url_prefix.to_s).to eq('http://localhost:4000/')
+            expect(new_connection.api_prefix).to eq('/api/v1')
+            expect(new_connection.auth_token).not_to be_empty
+          end
         end
       end
 
       describe '#get' do
-        it 'call CloudConductor GET API through request method' do
-          expect(@connection).to receive(:request).with(:get, '/dummy/get/path')
-
-          @connection.get '/dummy/get/path'
+        it 'call request with :get' do
+          path = '/path'
+          expect(connection).to receive(:request).with(:get, path)
+          connection.get(path)
         end
       end
 
       describe '#post' do
-        it 'call CloudConductor POST API through request method' do
-          expect(@connection).to receive(:request).with(:post, '/dummy/post/path', dummy_key: 'dummy_name')
-
-          @connection.post('/dummy/post/path', dummy_key: 'dummy_name')
+        it 'call request with :post' do
+          path = '/path'
+          payload = {}
+          expect(connection).to receive(:request).with(:post, path, payload)
+          connection.post(path, payload)
         end
       end
 
       describe '#put' do
-        it 'call CloudConductor PUT API through request method' do
-          expect(@connection).to receive(:request).with(:put, '/dummy/put/path', dummy_key: 'dummy_name')
-
-          @connection.put('/dummy/put/path', dummy_key: 'dummy_name')
+        it 'call request with :put' do
+          path = '/path'
+          payload = {}
+          expect(connection).to receive(:request).with(:put, path, payload)
+          connection.put(path, payload)
         end
       end
 
       describe '#delete' do
-        it 'call CloudConductor DELETE API through request method' do
-          expect(@connection).to receive(:request).with(:delete, '/dummy/delete/path')
-
-          @connection.delete '/dummy/delete/path'
+        it 'call request with :delete' do
+          path = '/path'
+          expect(connection).to receive(:request).with(:delete, path)
+          connection.delete(path)
         end
       end
 
       describe '#request' do
-        it 'call error_exit if raise faraday connection failed' do
-          @stubs.get('/dummy/get/path') { fail Faraday::ConnectionFailed, 'Dummy Fail' }
-          expect(@connection).to receive(:error_exit).with('Failed to connect http://127.0.0.1:9999/.')
-
-          @connection.request(:get, '/dummy/get/path')
+        before do
+          allow(connection.faraday).to receive(:get).and_return(double(status: 200, body: '{}', success?: true))
+          allow(connection.faraday).to receive(:post).and_return(double(status: 201, body: '{}', success?: true))
+          allow(connection.faraday).to receive(:put).and_return(double(status: 200, body: '{}', success?: true))
+          allow(connection.faraday).to receive(:delete).and_return(double(status: 204, body: nil, success?: true))
         end
 
-        it 'call error_exit if raise other error' do
-          @stubs.get('/dummy/get/path') { fail 'Dummy Fail' }
-          expect(@connection).to receive(:error_exit).with('UnexpectedError: RuntimeError Dummy Fail.')
-
-          @connection.request(:get, '/dummy/get/path')
+        it 'send request to path with auth_token' do
+          path = '/path'
+          payload = {}
+          expected_path = File.join(connection.api_prefix, path)
+          expected_payload = payload.merge(auth_token: connection.auth_token)
+          [:get, :post, :put, :delete].each do |method|
+            expect(connection.faraday).to receive(method).with(expected_path, expected_payload)
+            connection.request(method, path, payload)
+          end
         end
 
-        it 'return response' do
-          @stubs.get('/dummy/get/path') { [200, {}, 'Dummy Response'] }
+        it 'returns Faraday::Response' do
+          expect(connection).to receive(:request).and_return(duck_type(:status, :body, :success?))
+          connection.request(:get, '/path', {})
+        end
 
-          response = @connection.request(:get, '/dummy/get/path')
-          expect(response).to be_is_a(Faraday::Response)
-          expect(response.status).to eq(200)
-          expect(response.body).to eq('Dummy Response')
+        it 'error_exit when connection failed' do
+          allow(connection.faraday).to receive(:get) { fail Faraday::ConnectionFailed }
+          expect(connection).to receive(:error_exit).and_raise(SystemExit)
+          expect { connection.request(:get, '/path', {}) }.to raise_error(SystemExit)
+        end
+
+        it 'error_exit with status code message unless request success' do
+          allow(connection.faraday).to receive(:send).with(:get, any_args).and_return(double(status: 500, body: '{"error": "error message"}', success?: false))
+          expect(connection).to receive(:error_exit).and_raise(SystemExit)
+          expect { connection.request(:get, '/path', {}) }.to raise_error(SystemExit)
         end
       end
     end

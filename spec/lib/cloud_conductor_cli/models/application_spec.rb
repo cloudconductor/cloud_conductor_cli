@@ -1,234 +1,182 @@
+require 'active_support/core_ext'
+
 module CloudConductorCli
   module Models
     describe Application do
-      before do
-        @application = Application.new
+      let(:application) { CloudConductorCli::Models::Application.new }
+      let(:commands) { CloudConductorCli::Models::Application.commands }
+      let(:mock_application) do
+        {
+          id: 1,
+          system_id: 1,
+          name: 'application_name',
+          description: 'application_description'
+        }
+      end
+      let(:mock_application_history) do
+        {
+          id: 1,
+          application_id: 1,
+          version: '20150123-001',
+          domain: 'sample-app.example.com',
+          type: 'dynamic',
+          protocol: 'git',
+          url: 'http://example.com/repo.git',
+          revision: 'master',
+          pre_deploy: '',
+          post_deploy: '',
+          parameters: '{}'
+        }
+      end
 
-        @options = {}
-        allow(@application).to receive(:options) { @options }
-        allow(@application).to receive(:find_id_by_name).and_return(1)
-        allow(@application).to receive(:find_id_by_name).with(:application, 'dummy_application', anything).and_return(2)
-        allow(@application).to receive(:error_exit).and_raise(SystemExit)
+      before do
+        allow(application).to receive(:find_id_by).with(:application, :name, anything).and_return(mock_application[:id])
+        allow(application).to receive(:find_id_by).with(:history, :version, any_args).and_return(mock_application_history[:id])
+        allow(application).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
+        allow(application).to receive(:display_message)
+        allow(application).to receive(:display_list)
+        allow(application).to receive(:display_details)
       end
 
       describe '#list' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_application])) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@application).to receive_message_chain(:connection, :get).and_return(response)
-          allow(@application).to receive(:display_list)
-          @options = { 'system_name' => 'dummy_name' }
+          allow(application.connection).to receive(:get).with('/applications').and_return(mock_response)
         end
 
-        it 'display_list not call if system_id nil' do
-          allow(@application).to receive(:find_id_by_name).and_return(nil)
-          expect(@application).not_to receive(:display_list)
-
-          expect { @application.list }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['list'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_list not call if response fail' do
-          allow(@application).to receive_message_chain(:connection, :get).and_return(double(:response, success?: false, body: ''))
-          expect(@application).not_to receive(:display_list)
-
-          expect { @application.list }.to raise_error(SystemExit)
+        it 'request GET /applications' do
+          expect(application.connection).to receive(:get).with('/applications')
+          application.list
         end
 
-        it 'call connection#get to get application list' do
-          expect(@application.connection).to receive(:get).with('/systems/1/applications')
-
-          @application.list
-        end
-
-        it 'call display_list' do
-          expect(@application).to receive(:display_list)
-
-          @application.list
+        it 'display record list' do
+          expect(application).to receive(:display_list).with([mock_application.stringify_keys])
+          application.list
         end
       end
 
       describe '#show' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_application)) }
+        let(:mock_response_history) { double(status: 200, headers: [], body: JSON.dump(mock_application_history)) }
+        let(:mock_response_histories) { double(status: 200, headers: [], body: JSON.dump([mock_application_history])) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@application).to receive_message_chain(:connection, :get).and_return(response)
-          allow(@application).to receive(:display_details)
-          @options = { 'system_name' => 'dummy_name' }
-          @application_name = 'dummy_application'
+          allow(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}").and_return(mock_response)
+          allow(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}/histories")
+            .and_return(mock_response_histories)
+          allow(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}/histories/#{mock_application_history[:id]}")
+            .and_return(mock_response_history)
         end
 
-        it 'display_details not call if system_id nil' do
-          allow(@application).to receive(:find_id_by_name).and_return(nil)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.show @application_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = [:version]
+          expect(commands['show'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_details not call if application_id nil' do
-          allow(@application).to receive(:find_id_by_name).with(:application, 'dummy_application', anything).and_return(nil)
-          expect(@application).not_to receive(:display_details)
+        context 'without version' do
+          it 'request GET /applications/:id and GET /applications/:id/histories' do
+            expect(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}")
+            expect(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}/histories")
+            application.show('application_name')
+          end
 
-          expect { @application.show @application_name }.to raise_error(SystemExit)
+          it 'display record details' do
+            expect(application).to receive(:display_details).with(mock_application.stringify_keys).ordered
+            expect(application).to receive(:display_list).with([mock_application_history.stringify_keys])
+            application.show('application_name')
+          end
         end
 
-        it 'display_details not call if response fail' do
-          response = double(:response, success?: false, body: '', status: 'dummy_error')
-          allow(@application).to receive_message_chain(:connection, :get).and_return(response)
-          expect(@application).not_to receive(:display_details)
+        context 'with version' do
+          before { application.options = { version: mock_application_history[:version] } }
 
-          expect { @application.show @application_name }.to raise_error(SystemExit)
-        end
+          it 'request GET /applications/:id and GET /applications/:id/histories/:id' do
+            expect(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}")
+            expect(application.connection).to receive(:get).with("/applications/#{mock_application[:id]}/histories/#{mock_application_history[:id]}")
+            application.show('application_name')
+          end
 
-        it 'call connection#get' do
-          expect(@application.connection).to receive(:get).with('/systems/1/applications/2')
-
-          @application.show @application_name
-        end
-
-        it 'call display_details' do
-          expect(@application).to receive(:display_details)
-
-          @application.show @application_name
+          it 'display record details' do
+            expect(application).to receive(:display_details).with(mock_application.stringify_keys)
+            expect(application).to receive(:display_details).with(mock_application_history.stringify_keys)
+            application.show('application_name')
+          end
         end
       end
 
       describe '#create' do
+        let(:mock_response) { double(status: 201, headers: [], body: JSON.dump(mock_application)) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@application).to receive_message_chain(:connection, :post).and_return(response)
-          allow(@application).to receive(:display_message)
-          allow(@application).to receive(:display_details)
-          @options = { 'system_name' => 'dummy_name', 'name' => 'dummy_name', 'domain' => 'dummy_domain' }
-          @application_name = 'dummy_application'
+          allow(application.connection).to receive(:post).with('/applications', anything).and_return(mock_response)
         end
 
-        it 'display_details not call if system_id nil' do
-          allow(@application).to receive(:find_id_by_name).and_return(nil)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.create }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = [:system, :name, :description]
+          expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
-        it 'filter payload' do
-          @options['unnecessary_key'] = 'Unnecessary Value'
-          expect(@application.connection).to receive(:post).with('/systems/1/applications', hash_excluding('unnecessary_key'))
-
-          @application.create
+        it 'request POST /applications with payload' do
+          application.options = mock_application.except(:id, :system_id).merge('system' => 'system_name')
+          payload = application.options.except('system').merge('system_id' => 1)
+          expect(application.connection).to receive(:post).with('/applications', payload)
+          application.create
         end
 
-        it 'display_details not call if response fail' do
-          response = double(:response, success?: false, body: '', status: 'dummy_error')
-          allow(@application).to receive_message_chain(:connection, :post).and_return(response)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.create }.to raise_error(SystemExit)
-        end
-
-        it 'call connection#post' do
-          payload = { 'name' => 'dummy_name', 'domain' => 'dummy_domain' }
-          expect(@application.connection).to receive(:post).with('/systems/1/applications', payload)
-
-          @application.create
-        end
-
-        it 'call display_details' do
-          expect(@application).to receive(:display_details)
-
-          @application.create
+        it 'display message and record details' do
+          expect(application).to receive(:display_message)
+          expect(application).to receive(:display_details).with(mock_application.stringify_keys)
+          application.create
         end
       end
 
       describe '#update' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_application)) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@application).to receive_message_chain(:connection, :put).and_return(response)
-          allow(@application).to receive(:display_message)
-          allow(@application).to receive(:display_details)
-          @options = { 'system_name' => 'dummy_name' }
-          @application_name = 'dummy_application'
+          allow(application.connection).to receive(:put).with("/applications/#{mock_application[:id]}", anything).and_return(mock_response)
         end
 
-        it 'display_details not call if system_id nil' do
-          allow(@application).to receive(:find_id_by_name).and_return(nil)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.update @application_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = [:name, :description]
+          expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_details not call if application_id nil' do
-          allow(@application).to receive(:find_id_by_name).with(:application, 'dummy_application', anything).and_return(nil)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.update @application_name }.to raise_error(SystemExit)
+        it 'request PUT /applications/:id with payload' do
+          application.options = mock_application.except(:id, :system_id)
+          payload = application.options
+          expect(application.connection).to receive(:put).with("/applications/#{mock_application[:id]}", payload)
+          application.update('application_name')
         end
 
-        it 'filter payload' do
-          @options['unnecessary_key'] = 'Unnecessary Value'
-          expect(@application.connection).to receive(:put).with('/systems/1/applications/2', hash_excluding('unnecessary_key'))
-
-          @application.update @application_name
-        end
-
-        it 'display_details not call if response fail' do
-          response = double(:response, success?: false, body: '', status: 'dummy_error')
-          allow(@application).to receive_message_chain(:connection, :put).and_return(response)
-          expect(@application).not_to receive(:display_details)
-
-          expect { @application.update @application_name }.to raise_error(SystemExit)
-        end
-
-        it 'call connection#put' do
-          expect(@application.connection).to receive(:put).with('/systems/1/applications/2', anything)
-
-          @application.update @application_name
-        end
-
-        it 'call display_details' do
-          expect(@application).to receive(:display_details)
-
-          @application.update @application_name
+        it 'display message and record details' do
+          expect(application).to receive(:display_message)
+          expect(application).to receive(:display_details).with(mock_application.stringify_keys)
+          application.update('application_name')
         end
       end
 
       describe '#delete' do
+        let(:mock_response) { double(status: 204, headers: [], body: JSON.dump('')) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@application).to receive_message_chain(:connection, :delete).and_return(response)
-          allow(@application).to receive(:display_message)
-          @application_name = 'dummy_application'
-          @options = { 'system_name' => 'dummy_name' }
+          allow(application.connection).to receive(:delete).with("/applications/#{mock_application[:id]}").and_return(mock_response)
         end
 
-        it 'display_message not call if system_id nil' do
-          allow(@application).to receive(:find_id_by_name).and_return(nil)
-          expect(@application).not_to receive(:display_message)
-
-          expect { @application.delete @application_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['delete'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_message not call if application_id nil' do
-          allow(@application).to receive(:find_id_by_name).with(:application, 'dummy_application', anything).and_return(nil)
-          expect(@application).not_to receive(:display_message)
-
-          expect { @application.delete @application_name }.to raise_error(SystemExit)
+        it 'request DELETE /applications/:id' do
+          expect(application.connection).to receive(:delete).with("/applications/#{mock_application[:id]}")
+          application.delete('application_name')
         end
 
-        it 'display_message not call if response fail' do
-          response = double(:response, success?: false, body: '', status: 'dummy_error')
-          allow(@application).to receive_message_chain(:connection, :delete).and_return(response)
-          expect(@application).not_to receive(:display_message)
-
-          expect { @application.delete @application_name }.to raise_error(SystemExit)
-        end
-
-        it 'call connection#delete' do
-          expect(@application.connection).to receive(:delete).with('/systems/1/applications/2')
-
-          @application.delete @application_name
-        end
-
-        it 'call display_message' do
-          expect(@application).to receive(:display_message)
-
-          @application.delete @application_name
+        it 'display message' do
+          expect(application).to receive(:display_message)
+          application.delete('application_name')
         end
       end
     end

@@ -1,15 +1,12 @@
 module CloudConductorCli
   module Models
     describe Base do
-
       describe '.included' do
-        it 'call class_option when include Base module' do
-          class Dummy < Thor
-          end
-          expect(Dummy).to receive(:class_option).with(:host, aliases: '-H', type: :string, desc: 'CloudConductor server host. use CC_HOST environment if not specified.')
-          expect(Dummy).to receive(:class_option).with(:port, aliases: '-p', type: :string, desc: 'CloudConductor server port. use CC_PORT environment if not specified.')
-
-          Base.included(Dummy)
+        it 'define class_options when included' do
+          new_model = Class.new(Thor)
+          expect(new_model).to receive(:class_option).with(:host, hash_including(aliases: '-H'))
+          expect(new_model).to receive(:class_option).with(:port, hash_including(aliases: '-p'))
+          new_model.send(:include, Models::Base)
         end
       end
     end
