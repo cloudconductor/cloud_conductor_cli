@@ -49,6 +49,17 @@ module CloudConductorCli
         connection.delete("/systems/#{id}")
         display_message 'Delete completed successfully.'
       end
+
+      desc 'switch SYSTEM', 'Switch primary environment'
+      method_option :environment, type: :string, desc: 'Environment name'
+      def switch(system)
+        id = find_id_by(:system, :name, system)
+        environment_id = find_id_by(:environment, :name, options['environment'])
+        payload = declared(options, self.class, :switch).except('environment').merge('environment_id' => environment_id)
+        response = connection.put("/systems/#{id}/switch", payload)
+        display_message 'Switch completed successfully.'
+        display_details(JSON.parse(response.body))
+      end
     end
   end
 end

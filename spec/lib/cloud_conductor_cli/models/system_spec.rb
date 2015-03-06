@@ -19,6 +19,7 @@ module CloudConductorCli
       before do
         allow(system).to receive(:find_id_by).with(:system, :name, anything).and_return(mock_system[:id])
         allow(system).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+        allow(system).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
         allow(system).to receive(:display_message)
         allow(system).to receive(:display_list)
         allow(system).to receive(:display_details)
@@ -137,6 +138,32 @@ module CloudConductorCli
         it 'display message' do
           expect(system).to receive(:display_message)
           system.delete('system_name')
+        end
+      end
+
+      describe '#switch' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_system.merge(primary_environment_id: 1))) }
+        before do
+          allow(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}/switch", anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:environment]
+          expect(commands['switch'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request PUT /systems/:id/switch with payload' do
+          system.options = { 'environment' => 'environment_name' }
+          payload = { 'environment_id' => 1 }
+          expect(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}/switch", payload)
+          system.switch('system_name')
+        end
+
+        it 'display message and record details' do
+          system.options = { 'environment' => 'environment_name' }
+          expect(system).to receive(:display_message)
+          expect(system).to receive(:display_details).with(mock_system.merge(primary_environment_id: 1).stringify_keys)
+          system.switch('system_name')
         end
       end
     end
