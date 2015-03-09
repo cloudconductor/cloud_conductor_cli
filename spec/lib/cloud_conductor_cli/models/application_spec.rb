@@ -18,7 +18,6 @@ module CloudConductorCli
           id: 1,
           application_id: 1,
           version: '20150123-001',
-          domain: 'sample-app.example.com',
           type: 'dynamic',
           protocol: 'git',
           url: 'http://example.com/repo.git',
@@ -28,12 +27,21 @@ module CloudConductorCli
           parameters: '{}'
         }
       end
+      let(:mock_deployment) do
+        {
+          id: 1,
+          application_history_id: 1,
+          environment_id: 1,
+          status: 'PENDING'
+        }
+      end
 
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(application).to receive(:find_id_by).with(:application, :name, anything).and_return(mock_application[:id])
         allow(application).to receive(:find_id_by).with(:history, :version, any_args).and_return(mock_application_history[:id])
         allow(application).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
+        allow(application).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
         allow(application).to receive(:display_message)
         allow(application).to receive(:display_list)
         allow(application).to receive(:display_details)
@@ -178,6 +186,58 @@ module CloudConductorCli
         it 'display message' do
           expect(application).to receive(:display_message)
           application.delete('application_name')
+        end
+      end
+
+      describe '#release' do
+        let(:mock_response) { double(status: 201, headers: [], body: JSON.dump(mock_application_history)) }
+        before do
+          allow(application.connection).to receive(:post).with("/applications/#{mock_application[:id]}/histories", anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:protocol, :url, :revision, :type, :pre_deploy, :post_deploy, :parameters]
+          expect(commands['release'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request POST /applications/:id/histories with payload' do
+          application.options = mock_application_history.except(:id, :application_id, :version)
+          payload = application.options
+          expect(application.connection).to receive(:post).with("/applications/#{mock_application[:id]}/histories", payload)
+          application.release(mock_application[:name])
+        end
+
+        it 'display message and record details' do
+          expect(application).to receive(:display_message)
+          expect(application).to receive(:display_details).with(mock_application_history.stringify_keys)
+          application.release(mock_application[:name])
+        end
+      end
+
+      describe '#deploy' do
+        let(:mock_response) { double(status: 202, headers: [], body: JSON.dump(mock_deployment)) }
+        before do
+          allow(application.connection).to receive(:post).with("/applications/#{mock_application[:id]}/deploy", anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:version, :environment]
+          expect(commands['deploy'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request POST /applications/:id/deploy with payload' do
+          application.options = { 'version' => mock_application_history[:version],
+                                  'environment' => 'environment_name' }
+          payload = application.options.except('version', 'environment')
+                    .merge('environment_id' => 1, 'application_history_id' => 1)
+          expect(application.connection).to receive(:post).with("/applications/#{mock_application[:id]}/deploy", payload)
+          application.deploy(mock_application[:name])
+        end
+
+        it 'display message and record details' do
+          expect(application).to receive(:display_message)
+          expect(application).to receive(:display_details).with(mock_deployment.stringify_keys)
+          application.deploy(mock_application[:name])
         end
       end
     end

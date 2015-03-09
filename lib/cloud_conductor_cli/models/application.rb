@@ -61,7 +61,6 @@ module CloudConductorCli
       method_option :url, type: :string, required: true, desc: 'Application git repository or tar ball url'
       method_option :revision, type: :string, desc: 'Application git repository revision', default: 'master'
       method_option :protocol, type: :string, desc: 'Application url type (git or http)', default: 'git'
-      method_option :domain, type: :string, desc: 'Application domain'
       method_option :type, type: :string, desc: 'Application type', enum: %w(static, dynamic), default: 'dynamic'
       method_option :pre_deploy, type: :string, desc: 'Pre deploy script'
       method_option :post_deploy, type: :string, desc: 'Post deploy script'
@@ -85,10 +84,12 @@ module CloudConductorCli
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
       method_option :version, type: :string, desc: 'Application version (use latest version if unspecified)'
       method_option :environment, type: :string, required: true, desc: 'Target environment name or id'
+      # TODO: Fix API
+      # method_option :domain, type: :string, desc: 'Application domain'
       def deploy(application)
         application_id = find_id_by(:application, :name, application)
         environment_id = find_id_by(:environment, :name, options['environment'])
-        payload = { environment_id: environment_id }
+        payload = { 'environment_id' => environment_id }
         if options['version']
           application_history_id = find_id_by(:history, :version, options['version'], parent_model: :application, parent_id: application_id)
           payload.merge!('application_history_id' => application_history_id)
