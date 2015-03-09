@@ -73,7 +73,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:email, :name, :password, :password_confirmation, :admin]
+          allowed_options = [:email, :name, :password, :admin]
           expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
@@ -98,7 +98,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:email, :name, :password, :password_confirmation, :admin]
+          allowed_options = [:email, :name, :password, :admin]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 

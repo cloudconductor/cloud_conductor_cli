@@ -22,10 +22,11 @@ module CloudConductorCli
       method_option :email, type: :string, required: true, desc: 'Account email'
       method_option :name, type: :string, required: true, desc: 'Account user name'
       method_option :password, type: :string, required: true, desc: 'Account password'
-      method_option :password_confirmation, type: :string, required: true, desc: 'Account password confirmation'
       method_option :admin, type: :boolean, desc: 'Admin or not', default: false
       def create
-        payload = declared(options, self.class, :create).merge('admin' => options['admin'] ? 1 : 0)
+        payload = declared(options, self.class, :create)
+                  .merge('password_confirmation' => options['password'],
+                         'admin' => options['admin'] ? 1 : 0)
         response = connection.post('/accounts', payload)
         display_message 'Create completed successfully.'
         display_details(JSON.parse(response.body))
@@ -35,11 +36,12 @@ module CloudConductorCli
       method_option :email, type: :string, desc: 'Account email'
       method_option :name, type: :string, desc: 'Account user name'
       method_option :password, type: :string, desc: 'Account password'
-      method_option :password_confirmation, type: :string, desc: 'Account password confirmation'
       method_option :admin, type: :boolean, desc: 'Admin or not', default: false
       def update(account)
         id = find_id_by(:account, :email, account)
-        payload = declared(options, self.class, :update).merge('admin' => options['admin'] ? 1 : 0)
+        payload = declared(options, self.class, :update)
+                  .merge('password_confirmation' => options['password'],
+                         'admin' => options['admin'] ? 1 : 0)
         response = connection.put("/accounts/#{id}", payload)
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
