@@ -52,18 +52,6 @@ module CloudConductorCli
         JSON.parse(response.body)
       end
 
-      def validate_parameter(options, input)
-        if options['Type']
-          case options['Type']
-          when 'String', 'CommaDelimitedList'
-            return false unless input.is_a? String
-          when 'Number'
-            return false unless input.is_a? Fixnum
-          end
-        end
-        true
-      end
-
       def build_template_parameters(options)
         blueprint_name = options['blueprint'] || find_by(:environment, id: options[:id])['blueprint_id']
         if options['parameter_file']

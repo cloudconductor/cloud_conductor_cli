@@ -192,14 +192,6 @@ module CloudConductorCli
           end
         end
       end
-
-      describe '#validate_parameter' do
-        it 'returns true if type matched' do
-        end
-
-        it 'returns false if type mismatch' do
-        end
-      end
     end
   end
 end
