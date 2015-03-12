@@ -38,7 +38,6 @@ module CloudConductorCli
         candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
         template_parameters = build_template_parameters(options)
         user_attributes = build_user_attributes(options)
-        # stacks_attributes = build_stacks_attributes(options)
         payload = declared(options, self.class, :create)
                   .except('system', 'blueprint', 'clouds', 'parameter_file', 'user_attribute_file')
                   .merge('system_id' => system_id, 'blueprint_id' => blueprint_id,
@@ -102,6 +101,35 @@ module CloudConductorCli
         response = connection.post("/environments/#{id}/rebuild", payload)
         display_message 'Rebuild accepted. creating new environment.'
         display_details(JSON.parse(response.body))
+      end
+
+      desc 'send-event ENVIRONMENT', 'Send event to environment'
+      method_option :event, type: :string, desc: 'Event name'
+      def send_event(environment)
+        id = find_id_by(:environment, :name, environment)
+        payload = declared(options, self.class, :send_event)
+        response = connection.post("/environments/#{id}/events", payload)
+        event_id = JSON.parse(response.body)['event_id']
+        display_message "Event '#{options['event']} accepted. event_id: #{event_id}"
+      end
+
+      desc 'list-event ENVIRONMENT', 'List events'
+      def list_event(environment)
+        id = find_id_by(:environment, :name, environment)
+        response = connection.get("/environments/#{id}/events")
+        display_list(JSON.parse(response.body))
+      end
+
+      desc 'show-event ENVIRONMENT', 'Show event details'
+      method_option :event_id, type: :string, desc: 'Event id'
+      def show_event(environment)
+        id = find_id_by(:environment, :name, environment)
+        response = connection.get("/environments/#{id}/events/#{options['event_id']}")
+        event_details = JSON.parse(response.body)
+        display_message('Event Info', indent_level: 1)
+        display_details(event_details.except('results'))
+        display_message('Event Result Details', indent_level: 1)
+        display_list(event_details['results']) if event_details['results']
       end
     end
   end

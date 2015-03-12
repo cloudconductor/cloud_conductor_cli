@@ -17,6 +17,20 @@ module CloudConductorCli
           template_parameters: '{}'
         }
       end
+      let(:mock_event) do
+        {
+          id: '77970fa0-5cd8-49e2-8a3b-4b4502892628',
+          type: 'configure',
+          finished: true,
+          suceeded: true,
+          results: [{
+            hostname: 'test',
+            return_code: 0,
+            started_at: '2015-03-12T16:50:24.186+09:00',
+            finished_at: '2015-03-12T16:51:24.186+09:00'
+          }]
+        }
+      end
 
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
@@ -150,6 +164,78 @@ module CloudConductorCli
         it 'display message' do
           expect(environment).to receive(:display_message)
           environment.delete('environment_name')
+        end
+      end
+
+      describe '#send_event' do
+        let(:mock_response) { double(status: 202, headers: [], body: JSON.dump(event_id: 'xxxxxxxx')) }
+        before do
+          allow(environment.connection).to receive(:post).with("/environments/#{mock_environment[:id]}/events", anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:event]
+          expect(commands['send_event'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request POST /environments/:id/events with payload' do
+          environment.options = { event: 'configure' }
+          payload = environment.options
+          expect(environment.connection).to receive(:post).with("/environments/#{mock_environment[:id]}/events", payload)
+          environment.send_event('environment_name')
+        end
+
+        it 'display message and record details' do
+          environment.options = { event: 'configure' }
+          expect(environment).to receive(:display_message)
+          environment.send_event('environment_name')
+        end
+      end
+
+      describe '#list_event' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_event.except(:results)])) }
+        before do
+          allow(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events").and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['list_event'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request GET /environments/:id/events' do
+          expect(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events")
+          environment.list_event('environment_name')
+        end
+
+        it 'display message and record list' do
+          expect(environment).to receive(:display_list).with([mock_event.except(:results).stringify_keys])
+          environment.list_event('environment_name')
+        end
+      end
+
+      describe '#show_event' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_event)) }
+        before do
+          allow(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events/#{mock_event[:id]}").and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:event_id]
+          expect(commands['show_event'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request GET /environments/:id/events/:id' do
+          environment.options = { 'event_id' => mock_event[:id] }
+          expect(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events/#{mock_event[:id]}")
+          environment.show_event('environment_name')
+        end
+
+        it 'display message and record list' do
+          environment.options = { 'event_id' => mock_event[:id] }
+          expect(environment).to receive(:display_details).with(mock_event.except(:results).stringify_keys)
+          expect(environment).to receive(:display_list).with(mock_event[:results].map(&:stringify_keys))
+          environment.show_event('environment_name')
         end
       end
     end

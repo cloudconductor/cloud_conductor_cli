@@ -1,5 +1,6 @@
 require 'formatador'
 require 'json'
+require 'active_support/core_ext/string'
 
 module CloudConductorCli
   module Helpers
@@ -10,7 +11,7 @@ module CloudConductorCli
       end
 
       def display_list(data, exclude_keys: [])
-        display_data = data
+        display_data = convert_string(data)
         display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
         if display_data.empty?
           display_message 'No records'
@@ -20,10 +21,24 @@ module CloudConductorCli
       end
 
       def display_details(data, exclude_keys: [])
-        display_data = data
+        display_data = convert_string(data)
         display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
         display_data = verticalize(display_data)
         Formatador.display_compact_table(display_data)
+      end
+
+      # convert false to 'false' and truncate long text
+      def convert_string(data, max_length = 80)
+        case data
+        when Hash
+          data.each_with_object({}) do |(key, val), new_hash|
+            new_hash[key] = convert_string(val)
+          end
+        when Array
+          data.map { |obj| convert_string(obj) }
+        else
+          data.to_s.truncate(max_length, separator: /\s/)
+        end
       end
 
       def verticalize(data)
