@@ -37,7 +37,7 @@ module CloudConductorCli
         when Array
           data.map { |obj| convert_string(obj) }
         else
-          data.to_s.truncate(max_length, separator: /\s/)
+          data.to_s.truncate(max_length, separator: /\s/).gsub(/(\r\n|\r|\n)/, '\n')
         end
       end
 
