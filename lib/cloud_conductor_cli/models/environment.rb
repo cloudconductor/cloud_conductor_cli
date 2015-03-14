@@ -104,7 +104,7 @@ module CloudConductorCli
       end
 
       desc 'send-event ENVIRONMENT', 'Send event to environment'
-      method_option :event, type: :string, desc: 'Event name'
+      method_option :event, type: :string, required: true, desc: 'Event name'
       def send_event(environment)
         id = find_id_by(:environment, :name, environment)
         payload = declared(options, self.class, :send_event)
@@ -121,7 +121,7 @@ module CloudConductorCli
       end
 
       desc 'show-event ENVIRONMENT', 'Show event details'
-      method_option :event_id, type: :string, desc: 'Event id'
+      method_option :event_id, type: :string, required: true, desc: 'Event id'
       def show_event(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}/events/#{options['event_id']}")
