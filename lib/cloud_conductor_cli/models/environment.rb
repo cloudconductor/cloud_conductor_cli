@@ -110,7 +110,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :send_event)
         response = connection.post("/environments/#{id}/events", payload)
         event_id = JSON.parse(response.body)['event_id']
-        display_message "Event '#{options['event']} accepted. event_id: #{event_id}"
+        display_message "Event '#{options['event']}' accepted. event_id: #{event_id}"
       end
 
       desc 'list-event ENVIRONMENT', 'List events'
