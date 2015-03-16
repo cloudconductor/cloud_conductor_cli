@@ -1,3 +1,9 @@
 #!/usr/bin/env ruby
+
+require "pathname"
+bin_file = Pathname.new(__FILE__).realpath
+
+$:.unshift File.expand_path("../../lib", bin_file)
+
 require 'cloud_conductor_cli'
 CloudConductorCli::Client.start
