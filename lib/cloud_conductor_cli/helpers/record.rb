@@ -53,11 +53,16 @@ module CloudConductorCli
       end
 
       def build_template_parameters(options)
-        blueprint_name = options['blueprint'] || find_by(:environment, id: options[:id])['blueprint_id']
         if options['parameter_file']
           input_parameters = JSON.parse(File.read(options['parameter_file']))
         else
-          input_parameters = input_template_parameters(blueprint_name)
+          if options['blueprint']
+            blueprint_name = options['blueprint']
+          elsif options['id']
+            environment = find_by(:environment, id: options['id'])
+            blueprint_name = environment ? environment['blueprint_id'] : nil
+          end
+          input_parameters = blueprint_name ? input_template_parameters(blueprint_name) : {}
         end
         JSON.dump(input_parameters || {})
       end

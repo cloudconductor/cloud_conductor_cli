@@ -181,14 +181,34 @@ module CloudConductorCli
         end
 
         context 'without parameter_file' do
-          it 'call template_parameters' do
-            expect(record).to receive(:input_template_parameters).with('blueprint_name')
-            record.build_template_parameters(options.except('parameter_file'))
+          context 'with options[:blueprint]' do
+            it 'call input_template_parameters' do
+              expect(record).to receive(:input_template_parameters).with(options['blueprint'])
+              record.build_template_parameters(options.except('parameter_file'))
+            end
+
+            it 'returns template_parameters' do
+              result = record.build_template_parameters(options.except('parameter_file'))
+              expect(result).to eq(parameter_file)
+            end
           end
 
-          it 'returns template_parameters' do
-            result = record.build_template_parameters(options.except('parameter_file'))
-            expect(result).to eq(parameter_file)
+          context 'without options[:blueprint]' do
+            let(:new_options) { options.except('parameter_file', 'blueprint').merge('id' => 1) }
+            let(:mock_environment) { { id: 1, blueprint_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
+            before do
+              allow(record).to receive(:find_by).with(:environment, id: 1).and_return(mock_environment)
+            end
+
+            it 'call input_template_parameters' do
+              expect(record).to receive(:input_template_parameters).with(1)
+              record.build_template_parameters(new_options)
+            end
+
+            it 'returns template_parameters' do
+              result = record.build_template_parameters(new_options)
+              expect(result).to eq(parameter_file)
+            end
           end
         end
       end
