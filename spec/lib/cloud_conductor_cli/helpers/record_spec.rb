@@ -143,7 +143,7 @@ module CloudConductorCli
         end
         let(:options) do
           {
-            name: 'test',
+            name: 'environment_name',
             blueprint: 'blueprint_name',
             parameter_file: '/path/to/parameter_file',
             user_attribute_file: '/path/to/user_attribute_file'
@@ -194,10 +194,10 @@ module CloudConductorCli
           end
 
           context 'without options[:blueprint]' do
-            let(:new_options) { options.except('parameter_file', 'blueprint').merge('id' => 1) }
+            let(:new_options) { options.except('parameter_file', 'blueprint') }
             let(:mock_environment) { { id: 1, blueprint_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
             before do
-              allow(record).to receive(:find_by).with(:environment, id: 1).and_return(mock_environment)
+              allow(record).to receive(:find_by).with(:environment, name: 'environment_name').and_return(mock_environment)
             end
 
             it 'call input_template_parameters' do

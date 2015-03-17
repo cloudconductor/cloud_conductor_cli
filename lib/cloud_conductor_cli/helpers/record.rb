@@ -58,8 +58,8 @@ module CloudConductorCli
         else
           if options['blueprint']
             blueprint_name = options['blueprint']
-          elsif options['id']
-            environment = find_by(:environment, id: options['id'])
+          elsif options['name']
+            environment = find_by(:environment, name: options['name'])
             blueprint_name = environment ? environment['blueprint_id'] : nil
           end
           input_parameters = blueprint_name ? input_template_parameters(blueprint_name) : {}
