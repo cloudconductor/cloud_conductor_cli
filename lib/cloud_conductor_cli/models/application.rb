@@ -73,13 +73,13 @@ module CloudConductorCli
         display_details(JSON.parse(response.body))
       end
 
-      desc 'delete-version APPLICATION VERSION', 'Delete application version'
-      def delete_version(application, version)
-        application_id = find_id_by(:application, :name, application)
-        history_id = find_id_by(:application_history, :version, version)
-        connection.delete("/applications/#{application_id}/histories/#{history_id}")
-        display_message 'Delete completed successfully.'
-      end
+      # desc 'delete-version APPLICATION VERSION', 'Delete application version'
+      # def delete_version(application, version)
+      #   application_id = find_id_by(:application, :name, application)
+      #   history_id = find_id_by(:application_history, :version, version)
+      #   connection.delete("/applications/#{application_id}/histories/#{history_id}")
+      #   display_message 'Delete completed successfully.'
+      # end
 
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
       method_option :version, type: :string, desc: 'Application version (use latest version if unspecified)'

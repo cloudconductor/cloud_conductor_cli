@@ -51,7 +51,7 @@ module CloudConductorCli
       end
 
       desc 'switch SYSTEM', 'Switch primary environment'
-      method_option :environment, type: :string, desc: 'Environment name'
+      method_option :environment, type: :string, required: true, desc: 'Environment name'
       def switch(system)
         id = find_id_by(:system, :name, system)
         environment_id = find_id_by(:environment, :name, options['environment'])
