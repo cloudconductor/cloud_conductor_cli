@@ -21,9 +21,12 @@ Quick Start
 ### Clone github repository and install
 
 ```bash
-git clone https://github.com/cloudconductor/cloud_conductor.git
+git clone https://github.com/cloudconductor/cloud_conductor_cli.git
+cd cloud_conductor_cli
 bundle install
 bundle exec rake install
+export CC_AUTH_ID=[your_account_email]
+export CC_AUTH_PASSWORD=[your_account_password]
 ```
 
 ### Show usage
@@ -32,7 +35,7 @@ bundle exec rake install
 cc-cli help
 ```
 
-For more information, please visit [official user manual](http://cloudconductor.org/documents/user-manual/conductor-cli). (Japanese only)
+For more information, please visit [official user manual](http://cloudconductor.org/documents/user-manual/conductor-cli).
 
 Copyright and License
 =====================
