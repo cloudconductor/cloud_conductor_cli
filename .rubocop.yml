@@ -5,16 +5,16 @@ AllCops:
     - 'vendor/bundle/**/*'
     - 'tmp/**/*'
 LineLength:
-  Enabled: false
+  Max: 160
 MethodLength:
   Max: 30
+ClassLength:
+  Max: 160
 CyclomaticComplexity:
   Max: 10
 PerceivedComplexity:
   Max: 10
-Documentation:
-  Enabled: false
-Style/RegexpLiteral:
-  MaxSlashes: 0
 AbcSize:
+  Max: 40
+Documentation:
   Enabled: false

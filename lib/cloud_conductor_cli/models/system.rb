@@ -8,71 +8,57 @@ module CloudConductorCli
       desc 'list', 'List systems'
       def list
         response = connection.get('/systems')
-        error_exit('Failed to get systems', response) unless response.success?
-        display_list(JSON.parse(response.body), exclude_keys: %w(template_parameters parameters))
+        display_list(JSON.parse(response.body))
       end
 
-      desc 'show SYSTEM_NAME', 'Show system details'
-      def show(system_name)
-        id = find_id_by_name(:system, system_name)
-        error_exit('Specified record does not exist.') unless id
+      desc 'show SYSTEM', 'Show system details'
+      def show(system)
+        id = find_id_by(:system, :name, system)
         response = connection.get("/systems/#{id}")
-        error_exit("Failed to get system information. returns #{response.status}", response) unless response.success?
         display_details(JSON.parse(response.body))
       end
 
-      desc 'create', 'Create system from patterns'
+      desc 'create', 'Create system'
+      method_option :project, type: :string, required: true, desc: 'Project name or id'
       method_option :name, type: :string, required: true, desc: 'System name'
-      method_option :domain, type: :string, required: true, desc: 'Domain name to designate this system'
-      method_option :patterns, type: :array, required: true, desc: 'Pattern names to build system'
-      method_option :clouds, type: :array, required: true, desc: 'Cloud names to build system. First cloud is primary.'
-      method_option :parameter_file, type: :string,
-                                     desc: 'Load pattern parameters from json file. If this option does not specified, ' \
-                                           'open interactive shell to answer parameters.'
-      method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
+      method_option :description, type: :string, desc: 'System description'
+      method_option :domain, type: :string, desc: 'System domain name'
       def create
-        payload = {
-          name: options['name'],
-          domain: options['domain'],
-          clouds: clouds_with_priority(options['clouds']),
-          stacks: stacks(options)
-        }
+        project_id = find_id_by(:project, :name, options[:project])
+        payload = declared(options, self.class, :create).except('project').merge('project_id' => project_id)
         response = connection.post('/systems', payload)
-        error_exit("Failed to register systems. returns #{response.status}", response) unless response.success?
-        display_message 'Create accepted. Provisioning system to specified cloud.'
+        display_message 'Create completed successfully.'
         display_details(JSON.parse(response.body))
       end
 
-      desc 'update SYSTEM_NAME', 'Update system'
+      desc 'update SYSTEM', 'Update system'
       method_option :name, type: :string, desc: 'System name'
-      method_option :domain, type: :string, desc: 'Domain name to designate this system'
-      method_option :patterns, type: :array, required: true, desc: 'Platform pattern name to build core system'
-      method_option :clouds, type: :array, desc: 'Cloud names to build system. First cloud is primary.'
-      method_option :parameter_file, type: :string,
-                                     desc: 'Load parameters from file. If this option does not specified, ' \
-                                           'open interactive shell to answer parameters.'
-      method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
-      def update(system_name)
-        id = find_id_by_name(:system, system_name)
-        error_exit('Specified record does not exist.') unless id
-        payload = {}
-        payload[:name] = options['name'] if options['name']
-        payload[:domain] = options['domain'] if options['domain']
-        payload[:clouds] = clouds_with_priority(options['clouds']) if options['clouds']
-        payload[:stacks] = stacks(options) if options['parameter_file'] || options['user_attribute_file']
+      method_option :description, type: :string, desc: 'System description'
+      method_option :domain, type: :string, desc: 'System domain name'
+      def update(system)
+        id = find_id_by(:system, :name, system)
+        payload = declared(options, self.class, :update)
         response = connection.put("/systems/#{id}", payload)
-        error_exit("Failed to update system. returns #{response.status}", response) unless response.success?
         display_message 'Update completed successfully.'
         display_details(JSON.parse(response.body))
       end
 
-      desc 'delete SYSTEM_NAME', 'Delete system'
-      def delete(system_name)
-        id = find_id_by_name(:system, system_name)
-        error_exit('Specified record does not exist.') unless id
-        response = connection.delete("/systems/#{id}")
-        error_exit("Failed to delete system record. returns #{response.status}", response) unless response.success?
+      desc 'delete SYSTEM', 'Delete system'
+      def delete(system)
+        id = find_id_by(:system, :name, system)
+        connection.delete("/systems/#{id}")
         display_message 'Delete completed successfully.'
+      end
+
+      desc 'switch SYSTEM', 'Switch primary environment'
+      method_option :environment, type: :string, required: true, desc: 'Environment name'
+      def switch(system)
+        id = find_id_by(:system, :name, system)
+        environment_id = find_id_by(:environment, :name, options['environment'])
+        payload = declared(options, self.class, :switch).except('environment').merge('environment_id' => environment_id)
+        response = connection.put("/systems/#{id}/switch", payload)
+        display_message 'Switch completed successfully.'
+        display_details(JSON.parse(response.body))
       end
     end
   end

@@ -1,176 +1,170 @@
+require 'active_support/core_ext'
+
 module CloudConductorCli
   module Models
     describe System do
-      before do
-        @system = System.new
+      let(:system) { CloudConductorCli::Models::System.new }
+      let(:commands) { CloudConductorCli::Models::System.commands }
+      let(:mock_system) do
+        {
+          id: 1,
+          project_id: 1,
+          name: 'system_name',
+          description: 'system_description',
+          domain: 'test.example.com',
+          primary_environment_id: nil
+        }
+      end
 
-        @options = {}
-        allow(@system).to receive(:options) { @options }
-        allow(@system).to receive(:find_id_by_name).and_return(1)
-        allow(@system).to receive(:error_exit).and_raise(SystemExit)
+      before do
+        allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
+        allow(system).to receive(:find_id_by).with(:system, :name, anything).and_return(mock_system[:id])
+        allow(system).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+        allow(system).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
+        allow(system).to receive(:display_message)
+        allow(system).to receive(:display_list)
+        allow(system).to receive(:display_details)
       end
 
       describe '#list' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_system])) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@system).to receive_message_chain(:connection, :get).and_return(response)
-          allow(@system).to receive(:display_list)
+          allow(system.connection).to receive(:get).with('/systems').and_return(mock_response)
         end
 
-        it 'display_list not call if response fail' do
-          allow(@system).to receive_message_chain(:connection, :get).and_return(double(:response, success?: false))
-          expect(@system).not_to receive(:display_list)
-
-          expect { @system.list }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['list'].options.keys).to match_array(allowed_options)
         end
 
-        it 'call connection#get' do
-          expect(@system.connection).to receive(:get).with('/systems')
-
-          @system.list
+        it 'request GET /systems' do
+          expect(system.connection).to receive(:get).with('/systems')
+          system.list
         end
 
-        it 'call display_list' do
-          expect(@system).to receive(:display_list)
-
-          @system.list
+        it 'display record list' do
+          expect(system).to receive(:display_list).with([mock_system.stringify_keys])
+          system.list
         end
       end
 
       describe '#show' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_system)) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@system).to receive_message_chain(:connection, :get).and_return(response)
-          allow(@system).to receive(:display_details)
-          @system_name = 'dummy_system'
+          allow(system.connection).to receive(:get).with("/systems/#{mock_system[:id]}").and_return(mock_response)
         end
 
-        it 'display_details not call if system_id nil' do
-          allow(@system).to receive(:find_id_by_name).and_return(nil)
-          expect(@system).not_to receive(:display_details)
-
-          expect { @system.show @system_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['show'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_details not call if response fail' do
-          allow(@system).to receive_message_chain(:connection, :get).and_return(double(:response, success?: false, status: 'dummy status'))
-          expect(@system).not_to receive(:display_details)
-
-          expect { @system.show @system_name }.to raise_error(SystemExit)
+        it 'request GET /systems/:id' do
+          expect(system.connection).to receive(:get).with("/systems/#{mock_system[:id]}")
+          system.show('system_name')
         end
 
-        it 'call connection#get' do
-          expect(@system.connection).to receive(:get).with('/systems/1')
-
-          @system.show @system_name
-        end
-
-        it 'call display_details' do
-          expect(@system).to receive(:display_details)
-
-          @system.show @system_name
+        it 'display record details' do
+          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          system.show('system_name')
         end
       end
 
       describe '#create' do
+        let(:mock_response) { double(status: 201, headers: [], body: JSON.dump(mock_system)) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@system).to receive_message_chain(:connection, :post).and_return(response)
-          allow(@system).to receive(:clouds_with_priority).and_return([])
-          allow(@system).to receive(:stacks).and_return([])
-          allow(@system).to receive(:display_message)
-          allow(@system).to receive(:display_details)
-          @options = { 'name' => 'dummy_name', 'domain' => 'dummy_domain', 'patterns' => [], 'clouds' => [] }
+          allow(system.connection).to receive(:post).with('/systems', anything).and_return(mock_response)
         end
 
-        it 'display_details not call if response fail' do
-          allow(@system).to receive_message_chain(:connection, :post).and_return(double(:response, success?: false, status: 'dummy status'))
-          expect(@system).not_to receive(:display_details)
-
-          expect { @system.create }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = [:project, :name, :description, :domain]
+          expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
-        it 'call connection#post' do
-          payload = { name: 'dummy_name', domain: 'dummy_domain', clouds: [], stacks: [] }
-          expect(@system.connection).to receive(:post).with('/systems', payload)
-
-          @system.create
+        it 'request POST /systems with payload' do
+          system.options = mock_system.except(:id, :project_id, :primary_environment_id).merge('project' => 'project_name')
+          payload = system.options.except('project').merge('project_id' => 1)
+          expect(system.connection).to receive(:post).with('/systems', payload)
+          system.create
         end
 
-        it 'call display_details' do
-          expect(@system).to receive(:display_details)
-
-          @system.create
+        it 'display message and record details' do
+          expect(system).to receive(:display_message)
+          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          system.create
         end
       end
 
       describe '#update' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_system)) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@system).to receive_message_chain(:connection, :put).and_return(response)
-          allow(@system).to receive(:display_message)
-          allow(@system).to receive(:display_details)
-          @options = { 'patterns' => [] }
+          allow(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}", anything).and_return(mock_response)
         end
 
-        it 'display_details not call if system_id nil' do
-          allow(@system).to receive(:find_id_by_name).and_return(nil)
-          expect(@system).not_to receive(:display_details)
-
-          expect { @system.update @system_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = [:name, :description, :domain]
+          expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_details not call if response fail' do
-          allow(@system).to receive_message_chain(:connection, :put).and_return(double(:response, success?: false, status: 'dummy status'))
-          expect(@system).not_to receive(:display_details)
-
-          expect { @system.update @system_name }.to raise_error(SystemExit)
+        it 'request PUT /systems/:id with payload' do
+          system.options = mock_system.except(:id, :project_id, :primary_environment_id)
+          payload = system.options
+          expect(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}", payload)
+          system.update('system_name')
         end
 
-        it 'call connection#put' do
-          expect(@system.connection).to receive(:put).with('/systems/1', {})
-
-          @system.update @system_name
-        end
-
-        it 'call display_details' do
-          expect(@system).to receive(:display_details)
-
-          @system.update @system_name
+        it 'display message and record details' do
+          expect(system).to receive(:display_message)
+          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          system.update('system_name')
         end
       end
 
       describe '#delete' do
+        let(:mock_response) { double(status: 204, headers: [], body: JSON.dump('')) }
         before do
-          response = double(:response, body: '{ "message": "dummy response"}', success?: true, status: 'dummy status')
-          allow(@system).to receive_message_chain(:connection, :delete).and_return(response)
-          allow(@system).to receive(:display_message)
+          allow(system.connection).to receive(:delete).with("/systems/#{mock_system[:id]}").and_return(mock_response)
         end
 
-        it 'display_message not call if system_id nil' do
-          allow(@system).to receive(:find_id_by_name).and_return(nil)
-          expect(@system).not_to receive(:display_message)
-
-          expect { @system.delete @system_name }.to raise_error(SystemExit)
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['delete'].options.keys).to match_array(allowed_options)
         end
 
-        it 'display_message not call if response fail' do
-          allow(@system).to receive_message_chain(:connection, :delete).and_return(double(:response, success?: false, status: 'dummy status'))
-          expect(@system).not_to receive(:display_message)
-
-          expect { @system.delete @system_name }.to raise_error(SystemExit)
+        it 'request DELETE /systems/:id' do
+          expect(system.connection).to receive(:delete).with("/systems/#{mock_system[:id]}")
+          system.delete('system_name')
         end
 
-        it 'call connection#delete' do
-          expect(@system.connection).to receive(:delete).with('/systems/1')
+        it 'display message' do
+          expect(system).to receive(:display_message)
+          system.delete('system_name')
+        end
+      end
 
-          @system.delete @system_name
+      describe '#switch' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_system.merge(primary_environment_id: 1))) }
+        before do
+          allow(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}/switch", anything).and_return(mock_response)
         end
 
-        it 'call display_details' do
-          expect(@system).to receive(:display_message)
+        it 'allow valid options' do
+          allowed_options = [:environment]
+          expect(commands['switch'].options.keys).to match_array(allowed_options)
+        end
 
-          @system.delete @system_name
+        it 'request PUT /systems/:id/switch with payload' do
+          system.options = { 'environment' => 'environment_name' }
+          payload = { 'environment_id' => 1 }
+          expect(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}/switch", payload)
+          system.switch('system_name')
+        end
+
+        it 'display message and record details' do
+          system.options = { 'environment' => 'environment_name' }
+          expect(system).to receive(:display_message)
+          expect(system).to receive(:display_details).with(mock_system.merge(primary_environment_id: 1).stringify_keys)
+          system.switch('system_name')
         end
       end
     end

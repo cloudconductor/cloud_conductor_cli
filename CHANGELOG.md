@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 1.0.0 (2015/03/27)
+
+  - Support CloudConductor v1.0 API.
+
 ## version 0.3.2 (2014/12/24)
 
   - Remove unnecessary logics because response json from core already deleted unneeded parameters.

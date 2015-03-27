@@ -1,270 +1,215 @@
+require 'active_support/core_ext'
+
 module CloudConductorCli
   module Helpers
     describe Record do
-      before do
-        @record = Object.new
-        @record.extend(Record)
+      let(:record) { Object.new.extend(Record) }
+      let(:model) { :project }
+      let(:mock_project) { { id: 1, name: 'project_name', description: 'project_description' } }
 
-        @options = { host: 'localhost', port: 9292 }
-        allow(@record).to receive(:options).and_return(@options)
+      before do
+        allow(Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
+        allow(record).to receive(:options).and_return({})
       end
 
       describe '#connection' do
-        it 'call Connection new methods' do
-          expect(Connection).to receive(:new).with('localhost', 9292)
-          @record.connection
+        it 'returns Connection instance' do
+          allow(Connection).to receive(:new).and_call_original
+          allow_any_instance_of(Connection).to receive(:get_auth_token).and_return('some_auth_token')
+          expect(record.connection).to be_instance_of(Connection)
         end
+      end
 
-        it 'returns Connection' do
-          expect(@record.connection).to be_is_a(CloudConductorCli::Helpers::Connection)
-        end
+      describe '#declared' do
       end
 
       describe '#list_records' do
         before do
-          response = double(:response, body: '{ "dummy_key": "dummy_value" }')
-          allow(@record).to receive_message_chain(:connection, :get).and_return(response)
+          mock_response = double(status: 200, headers: [], body: JSON.dump([mock_project]))
+          allow(record.connection).to receive(:get).with("/#{model.to_s.pluralize}").and_return(mock_response)
         end
 
-        it 'call connection if parent_model is not nil' do
-          expect(@record.connection).to receive(:get).with('/systems/1/applications')
-
-          @record.list_records(:application, parent_model: :system, parent_id: 1)
+        it 'request GET /:models' do
+          expect(record.connection).to receive(:get).with("/#{model.to_s.pluralize}")
+          record.list_records(model)
         end
 
-        it 'call connection if parent_model is nil' do
-          expect(@record.connection).to receive(:get).with('/clouds')
-
-          @record.list_records(:cloud)
-        end
-
-        it 'return hash that parse response body' do
-          expect(@record.list_records(:cloud)).to eq('dummy_key' => 'dummy_value')
+        it 'returns specified model records' do
+          result = record.list_records(model)
+          expect(result).to match_array([mock_project.stringify_keys])
         end
       end
 
-      describe '#find_id_by_name' do
+      describe '#where' do
         before do
-          records = [{ 'id' => 1, 'name' => 'dummy_name' }, { 'id' => 2 }]
-          allow(@record).to receive(:list_records).and_return(records)
+          mock_projects = [mock_project, mock_project.merge(id: 2, name: 'new_project')]
+          allow(record).to receive(:list_records).and_return(mock_projects.map(&:stringify_keys))
         end
 
         it 'call list_records' do
-          expect(@record).to receive(:list_records).with(:cloud, parent_model: nil, parent_id: nil)
-
-          @record.find_id_by_name(:cloud, 'dummy_name')
+          expect(record).to receive(:list_records)
+          record.where(model, name: 'project_name')
         end
 
-        it 'return record id that find by record name' do
-          expect(@record.find_id_by_name(:cloud, 'dummy_name')).to eq(1)
-        end
-
-        it 'return record id that find by record id' do
-          expect(@record.find_id_by_name(:cloud, 2)).to eq(2)
-        end
-
-        it 'return nil if does not find record' do
-          expect(@record.find_id_by_name(:cloud, 3)).to eq(nil)
+        it 'returns filtered records' do
+          result = record.where(model, name: 'project_name')
+          expect(result).to match([mock_project.stringify_keys])
         end
       end
 
-      describe '#select_by_names' do
+      describe '#find_by' do
         before do
-          records = [{ 'id' => 1, 'name' => 'dummy_name1' }, { 'id' => 2, 'name' => 'dummy_name2' }]
-          allow(@record).to receive(:list_records).and_return(records)
+          allow(record).to receive(:where).and_return([mock_project.stringify_keys])
         end
 
-        it 'call list_records' do
-          expect(@record).to receive(:list_records)
-
-          @record.select_by_names(:cloud, ['dummy_name1'])
+        it 'call where' do
+          expect(record).to receive(:where)
+          record.find_by(model, name: 'project_name')
         end
 
-        it 'return record that select by record name' do
-          expect(@record.select_by_names(:cloud, ['dummy_name1'])).to eq([{ 'id' => 1, 'name' => 'dummy_name1' }])
-        end
-
-        it 'return record that select by record id' do
-          expect(@record.select_by_names(:cloud, ['2'])).to eq([{ 'id' => 2, 'name' => 'dummy_name2' }])
-        end
-
-        it 'return records that select by record name and record id' do
-          records = @record.select_by_names(:clouds, %w(1 2 3))
-
-          expect(records.size).to eq(2)
-          expect(records[0]).to eq('id' => 1, 'name' => 'dummy_name1')
-          expect(records[1]).to eq('id' => 2, 'name' => 'dummy_name2')
-        end
-
-        it 'return empty array if does not find record' do
-          expect(@record.select_by_names(:cloud, ['test_name'])).to eq([])
+        it 'returns first matched record' do
+          result = record.find_by(model, name: 'project_name')
+          expect(result).to match(mock_project.stringify_keys)
         end
       end
 
-      describe '#pattern_parameters' do
+      describe '#find_id_by' do
         before do
-          @pattern_names = ['dummy_pattern_1']
-          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_1').and_return(1)
-          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_2').and_return(nil)
-          allow(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_3').and_return(3)
-
-          response1 = double(:response, body: '{ "dummy_key": "dummy_value_1" }')
-          response2 = double(:response, body: '{ "dummy_key": "dummy_value_3" }')
-          allow(@record).to receive_message_chain(:connection, :get).with('/patterns/1/parameters').and_return(response1)
-          allow(@record).to receive_message_chain(:connection, :get).with('/patterns/3/parameters').and_return(response2)
+          allow(record).to receive(:find_by).and_return(mock_project.stringify_keys)
         end
 
-        it 'call find_id_by_name' do
-          expect(@record).to receive(:find_id_by_name).with(:pattern, 'dummy_pattern_1')
-
-          @record.pattern_parameters @pattern_names
+        it 'call find_by' do
+          expect(record).to receive(:find_by).with(model, { name: 'project_name' }, parent_model: nil, parent_id: nil)
+          record.find_id_by(model, :name, 'project_name')
         end
 
-        it 'call connection get ' do
-          expect(@record.connection).to receive(:get).with('/patterns/1/parameters')
-
-          @record.pattern_parameters @pattern_names
-        end
-
-        it 'return parameters that parse response body' do
-          expect(@record.pattern_parameters @pattern_names).to eq('dummy_pattern_1' => { 'dummy_key' => 'dummy_value_1' })
-        end
-
-        it 'skip if pattern id is nil' do
-          results = @record.pattern_parameters %w(dummy_pattern_1 dummy_pattern_2 dummy_pattern_3)
-
-          expect(results.size).to eq(2)
-          expect(results['dummy_pattern_1']).to eq('dummy_key' => 'dummy_value_1')
-          expect(results['dummy_pattern_3']).to eq('dummy_key' => 'dummy_value_3')
+        it 'returns id of matched record' do
+          result = record.find_id_by(model, :name, 'project_name')
+          expect(result).to eq(mock_project[:id])
         end
       end
 
-      describe '#validate_parameter' do
-        it 'return true if options type is nil' do
-          expect(@record.validate_parameter({}, '')).to eq(true)
+      describe '#template_parameters' do
+        let(:mock_response_body) do
+          JSON.dump(sample_pattern: {
+                      Parameter1: {
+                        Type: 'String',
+                        Description: 'test1'
+                      },
+                      Parameter2: {
+                        Type: 'Number',
+                        Description: 'test2'
+                      },
+                      Parameter3: {
+                        Type: 'CommaDelimitedList',
+                        Description: 'test3'
+                      }
+                    })
         end
+        let(:mock_response) { double(status: 200, headers: [], body: mock_response_body) }
 
-        it 'return true if options type is String and input type is String' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'String' }
-
-          expect(@record.validate_parameter(options, 'dummy_value')).to eq(true)
-        end
-
-        it 'return true if options type is String and input type is CommaDelimitedList' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'String' }
-
-          expect(@record.validate_parameter(options, 'dummy_value_1, dummy_value_2')).to eq(true)
-        end
-
-        it 'return false if options type is String and input type is Fixnum' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'String' }
-
-          expect(@record.validate_parameter(options, 1)).to eq(false)
-        end
-
-        it 'return true if options type is CommaDelimitedList and input type is String' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'CommaDelimitedList' }
-
-          expect(@record.validate_parameter(options, 'dummy_value')).to eq(true)
-        end
-
-        it 'return true if options type is CommaDelimitedList and input type is CommaDelimitedList' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'CommaDelimitedList' }
-
-          expect(@record.validate_parameter(options, 'dummy_value_1, dummy_value_2')).to eq(true)
-        end
-
-        it 'return false if options type is CommaDelimitedList and input type is Fixnum' do
-          options = { 'Default' => 'dummy_default_value', 'Type' => 'CommaDelimitedList' }
-
-          expect(@record.validate_parameter(options, 1)).to eq(false)
-        end
-
-        it 'return false if options type is Number and input type is String' do
-          @options = { 'Default' => 'dummy_default_value', 'Type' => 'Number' }
-
-          expect(@record.validate_parameter(@options, 'dummy_value')).to eq(false)
-        end
-
-        it 'return false if options type is Number and input type is CommaDelimitedList' do
-          @options = { 'Default' => 'dummy_default_value', 'Type' => 'Number' }
-
-          expect(@record.validate_parameter(@options, 'dummy_value_1, dummy_value_2')).to eq(false)
-        end
-
-        it 'return true if options type is Number and input type is Fixnum' do
-          @options = { 'Default' => 'dummy_default_value', 'Type' => 'Number' }
-
-          expect(@record.validate_parameter(@options, 1)).to eq(true)
-        end
-      end
-
-      describe '#clouds_with_priority' do
         before do
-          allow(@record).to receive(:find_id_by_name).and_return(nil)
-          allow(@record).to receive(:find_id_by_name).with(:cloud, 'OpenStack').and_return(1)
-          allow(@record).to receive(:find_id_by_name).with(:cloud, 'AWS').and_return(2)
+          allow(record).to receive(:find_id_by).with(:blueprint, :name, 'blueprint_name').and_return(1)
+          allow(record.connection).to receive(:get).with('/blueprints/1/parameters').and_return(mock_response)
         end
 
-        it 'return clouds hash that set the priority ' do
-          results = @record.clouds_with_priority(%w(OpenStack AWS))
-
-          expect(results.size).to eq(2)
-          expect(results.first[:priority]).to be_is_a(Fixnum)
-          expect(results.last[:priority]).to be_is_a(Fixnum)
+        it 'request GET /blueprint/:id/parameters' do
+          expect(record.connection).to receive(:get).with('/blueprints/1/parameters')
+          record.template_parameters('blueprint_name')
         end
 
-        it 'priority is higher for first' do
-          results = @record.clouds_with_priority(%w(OpenStack AWS))
-
-          expect(results.first[:priority] > results.last[:priority]).to eq(true)
-        end
-
-        it 'calculate priority by order of argument when clouds table has different order' do
-          results = @record.clouds_with_priority(%w(AWS OpenStack))
-
-          expect(results.first[:priority] > results.last[:priority]).to eq(true)
-
-          expect(results[0][:id]).to eq(2)
-          expect(results[1][:id]).to eq(1)
-        end
-
-        it 'excludes record that does not exist' do
-          results = @record.clouds_with_priority(%w(OpenStack DummyCloud AWS))
-
-          expect(results.size).to eq(2)
-          expect(results[0][:id]).to eq(1)
-          expect(results[1][:id]).to eq(2)
+        it 'returns template parameters' do
+          result = record.template_parameters('blueprint_name')
+          expect(result).to match(JSON.parse(mock_response_body))
         end
       end
 
-      describe '#stacks' do
-        before do
-          allow(@record).to receive(:input_template_parameters).and_return('dummy_pattern' => { 'dummy_key' => 'dummy_value' })
-          allow(@record).to receive(:select_by_names).and_return([{ 'id' => 1, 'name' => 'dummy_pattern_name' }])
-
-          dummy_parameter = '{ "dummy_pattern_name": { "dummy_key": "dummy_value" }}'
-          allow(File).to receive(:read).with('dummy_parameter_file.json').and_return(dummy_parameter)
-          dummy_user_attribute = '{ "dummy_pattern_name": { "dummy_attribute": "dummy_attribute_value" } }'
-          allow(File).to receive(:read).with('dummy_user_attribute_file.json').and_return(dummy_user_attribute)
+      describe '#build_template_parameters' do
+        let(:mock_response_body) do
+          JSON.dump(sample_pattern: {
+                      Parameter1: {
+                        Type: 'String',
+                        Description: 'test1'
+                      },
+                      Parameter2: {
+                        Type: 'Number',
+                        Description: 'test2'
+                      },
+                      Parameter3: {
+                        Type: 'CommaDelimitedList',
+                        Description: 'test3'
+                      }
+                    })
+        end
+        let(:options) do
+          {
+            name: 'environment_name',
+            blueprint: 'blueprint_name',
+            parameter_file: '/path/to/parameter_file',
+            user_attribute_file: '/path/to/user_attribute_file'
+          }.stringify_keys
+        end
+        let(:parameter_file) do
+          JSON.dump(sample_pattern: {
+                      Parameter1: 'test1',
+                      Parameter2: 10,
+                      Parameter3: 'test1,test2,test3'
+                    })
+        end
+        let(:user_attribute_file) do
+          JSON.dump(cookbook_name: {
+                      key1: 'value1'
+                    })
         end
 
-        it 'return parameters that required to create stack' do
-          option = {
-            'id' => 1,
-            'name' => 'spec_for_record',
-            'patterns' => ['dummy_pattern_name'],
-            'parameter_file' => 'dummy_parameter_file.json',
-            'user_attribute_file' => 'dummy_user_attribute_file.json'
-          }
+        before do
+          allow(record).to receive(:input_template_parameters).and_return(JSON.parse(parameter_file))
+          allow(File).to receive(:read).with('/path/to/parameter_file').and_return(parameter_file)
+          allow(File).to receive(:read).with('/path/to/user_attribute_file').and_return(user_attribute_file)
+        end
 
-          expected_result = [{
-            name: 'spec-for-record-dummy-pattern-name',
-            pattern_id: 1,
-            template_parameters: '{"dummy_key":"dummy_value"}',
-            parameters: '{"dummy_attribute":"dummy_attribute_value"}'
-          }]
-          expect(@record.stacks option).to eq(expected_result)
+        context 'with parameter_file' do
+          it 'call File.read' do
+            expect(File).to receive(:read).with('/path/to/parameter_file')
+            record.build_template_parameters(options)
+          end
+
+          it 'returns template_parameters' do
+            result = record.build_template_parameters(options)
+            expect(result).to eq(parameter_file)
+          end
+        end
+
+        context 'without parameter_file' do
+          context 'with options[:blueprint]' do
+            it 'call input_template_parameters' do
+              expect(record).to receive(:input_template_parameters).with(options['blueprint'])
+              record.build_template_parameters(options.except('parameter_file'))
+            end
+
+            it 'returns template_parameters' do
+              result = record.build_template_parameters(options.except('parameter_file'))
+              expect(result).to eq(parameter_file)
+            end
+          end
+
+          context 'without options[:blueprint]' do
+            let(:new_options) { options.except('parameter_file', 'blueprint') }
+            let(:mock_environment) { { id: 1, blueprint_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
+            before do
+              allow(record).to receive(:find_by).with(:environment, name: 'environment_name').and_return(mock_environment)
+            end
+
+            it 'call input_template_parameters' do
+              expect(record).to receive(:input_template_parameters).with(1)
+              record.build_template_parameters(new_options)
+            end
+
+            it 'returns template_parameters' do
+              result = record.build_template_parameters(new_options)
+              expect(result).to eq(parameter_file)
+            end
+          end
         end
       end
     end

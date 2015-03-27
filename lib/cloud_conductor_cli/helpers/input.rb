@@ -4,8 +4,8 @@ require 'json'
 module CloudConductorCli
   module Helpers
     module Input
-      def input_template_parameters(pattern_names)
-        parameters = pattern_parameters(pattern_names)
+      def input_template_parameters(blueprint_name)
+        parameters = template_parameters(blueprint_name)
         read_user_inputs(parameters)
       end
 
@@ -18,7 +18,13 @@ module CloudConductorCli
             loop do
               input = Readline.readline("  Default [#{options['Default']}] > ")
               input = options['Default'] if !options['Default'].nil? && (input.nil? || input.empty?)
-              break if validate_parameter(options, input)
+              begin
+                input = Integer(input) if options['Type'] == 'Number'
+              rescue ArgumentError
+                display_message("Invalid Number #{input}", indent_level: 1)
+                next
+              end
+              break if validate_parameter(input, options)
             end
             inputs[key_name] = input
           end
@@ -26,6 +32,18 @@ module CloudConductorCli
       rescue Interrupt
         display_message "\n"
         exit
+      end
+
+      def validate_parameter(input, options)
+        if options['Type']
+          case options['Type']
+          when 'String', 'CommaDelimitedList'
+            return false unless input.is_a? String
+          when 'Number'
+            return false unless input.is_a? Fixnum
+          end
+        end
+        true
       end
     end
   end

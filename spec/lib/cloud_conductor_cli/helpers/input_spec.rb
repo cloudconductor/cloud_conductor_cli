@@ -8,12 +8,12 @@ module CloudConductorCli
 
       describe '#input_template_parameters' do
         before do
-          allow(@input).to receive(:pattern_parameters).and_return({})
+          allow(@input).to receive(:template_parameters).and_return({})
           allow(@input).to receive(:read_user_inputs).and_return([])
         end
 
-        it 'call pattern_parameters' do
-          expect(@input).to receive(:pattern_parameters).with(['dummy_pattern_name']).and_return({})
+        it 'call template_parameters' do
+          expect(@input).to receive(:template_parameters).with(['dummy_pattern_name']).and_return({})
 
           @input.input_template_parameters(['dummy_pattern_name'])
         end
@@ -50,7 +50,7 @@ module CloudConductorCli
 
         it 'call validate_parameter' do
           options = { 'Description' => 'dummy_description', 'Default' => 'dummy_default' }
-          expect(@input).to receive(:validate_parameter).with(options, 'dummy_input')
+          expect(@input).to receive(:validate_parameter).with('dummy_input', options)
 
           @input.read_user_inputs(@parameters)
         end
@@ -117,6 +117,19 @@ module CloudConductorCli
           allow(Readline).to receive(:readline).and_raise(Interrupt)
 
           @input.read_user_inputs(@parameters)
+        end
+      end
+
+      describe '#validate_parameter' do
+        it 'returns true if type matched' do
+          expect(@input.validate_parameter('string value', 'Type' => 'String')).to be_truthy
+          expect(@input.validate_parameter('comma,delimited,list', 'Type' => 'CommaDelimitedList')).to be_truthy
+          expect(@input.validate_parameter(Integer('2'), 'Type' => 'Number')).to be_truthy
+        end
+
+        it 'returns false if type mismatch' do
+          expect(@input.validate_parameter('string value', 'Type' => 'Number')).to be_falsey
+          expect(@input.validate_parameter('comma,delimited,list', 'Type' => 'Number')).to be_falsey
         end
       end
     end
