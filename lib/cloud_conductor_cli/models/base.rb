@@ -13,6 +13,8 @@ module CloudConductorCli
                                     desc: 'CloudConductor server host. use CC_HOST environment if not specified.'
           klass.class_option :port, aliases: '-p', type: :string,
                                     desc: 'CloudConductor server port. use CC_PORT environment if not specified.'
+          klass.class_option :format, aliases: '-f', type: :string, default: 'table',
+                                      desc: 'Output format(table / json). use table format if not specified.'
         end
       end
     end

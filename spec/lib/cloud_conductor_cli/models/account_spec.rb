@@ -17,9 +17,8 @@ module CloudConductorCli
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(account).to receive(:find_id_by).with(:account, :email, anything).and_return(mock_account[:id])
+        allow(account).to receive(:output)
         allow(account).to receive(:display_message)
-        allow(account).to receive(:display_list)
-        allow(account).to receive(:display_details)
       end
 
       describe '#list' do
@@ -39,7 +38,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(account).to receive(:display_list).with([mock_account.stringify_keys])
+          expect(account).to receive(:output).with(mock_response)
           account.list
         end
       end
@@ -61,7 +60,7 @@ module CloudConductorCli
         end
 
         it 'display record details' do
-          expect(account).to receive(:display_details).with(mock_account.stringify_keys)
+          expect(account).to receive(:output).with(mock_response)
           account.show('test@example.com')
         end
       end
@@ -86,7 +85,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(account).to receive(:display_message)
-          expect(account).to receive(:display_details).with(mock_account.stringify_keys)
+          expect(account).to receive(:output).with(mock_response)
           account.create
         end
       end
@@ -111,7 +110,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(account).to receive(:display_message)
-          expect(account).to receive(:display_details).with(mock_account.stringify_keys)
+          expect(account).to receive(:output).with(mock_response)
           account.update('test@example.com')
         end
       end
