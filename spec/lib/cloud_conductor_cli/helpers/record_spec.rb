@@ -9,12 +9,12 @@ module CloudConductorCli
 
       before do
         allow(Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
-        allow(record).to receive(:options).and_return({ host: 'dummy_host', port: 99999 })
+        allow(record).to receive(:options).and_return(host: 'dummy_host', port: 9999)
       end
 
       describe '#connection' do
         it 'returns Connection instance' do
-          expect(Connection).to receive(:new).with('dummy_host', 99999)
+          expect(Connection).to receive(:new).with('dummy_host', 9999)
           record.connection
         end
       end
