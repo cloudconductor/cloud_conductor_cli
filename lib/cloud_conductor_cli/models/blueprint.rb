@@ -34,6 +34,7 @@ module CloudConductorCli
           payload.merge!('patterns_attributes' => patterns_attributes)
         end
         response = connection.post('/blueprints', payload)
+
         display_message 'Create completed successfully.'
         output(response)
       end
@@ -52,6 +53,7 @@ module CloudConductorCli
           payload.merge!('patterns_attributes' => patterns_attributes)
         end
         response = connection.put("/blueprints/#{id}", payload)
+
         display_message 'Update completed successfully.'
         output(response)
       end
@@ -60,6 +62,7 @@ module CloudConductorCli
       def delete(blueprint)
         id = find_id_by(:blueprint, :name, blueprint)
         connection.delete("/blueprints/#{id}")
+
         display_message 'Delete completed successfully.'
       end
     end

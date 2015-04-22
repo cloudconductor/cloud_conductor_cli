@@ -35,6 +35,7 @@ module CloudConductorCli
         system_id = find_id_by(:system, :name, options['system'])
         payload = declared(options, self.class, :create).except('system').merge('system_id' => system_id)
         response = connection.post('/applications', payload)
+
         display_message 'Create complete successfully.'
         output(response)
       end
@@ -46,6 +47,7 @@ module CloudConductorCli
         id = find_id_by(:application, :name, application)
         payload = declared(options, self.class, :update)
         response = connection.put("/applications/#{id}", payload)
+
         display_message 'Update completed successfully.'
         output(response)
       end
@@ -54,6 +56,7 @@ module CloudConductorCli
       def delete(application)
         id = find_id_by(:application, :name, application)
         connection.delete("/applications/#{id}")
+
         display_message 'Delete completed successfully.'
       end
 
@@ -69,6 +72,7 @@ module CloudConductorCli
         application_id = find_id_by(:application, :name, application)
         payload = declared(options, self.class, :release)
         response = connection.post("/applications/#{application_id}/histories", payload)
+
         display_message 'Create complete successfully.'
         output(response)
       end
@@ -95,6 +99,7 @@ module CloudConductorCli
           payload.merge!('application_history_id' => application_history_id)
         end
         response = connection.post("/applications/#{application_id}/deploy", payload)
+
         display_message 'Accepted successfully. Deploying application to environment.'
         output(response)
       end
