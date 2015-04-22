@@ -57,7 +57,7 @@ module CloudConductorCli
           end
         end
 
-        describe '#display_details' do
+        describe '#display_detail' do
           before do
             allow(@output).to receive(:filter) { |data, _exclude_keys| data }
             allow(@output).to receive(:verticalize) { |data, _exclude_keys| data }
@@ -67,19 +67,19 @@ module CloudConductorCli
           it 'call filter' do
             expect(@output).to receive(:filter).with({ dummy_key: 'dummy_data' }, [:dummy_key])
 
-            @output.send(:display_details, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
+            @output.send(:display_detail, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
           end
 
           it 'call verticalize' do
             expect(@output).to receive(:verticalize).with(dummy_key: 'dummy_data')
 
-            @output.send(:display_details, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
+            @output.send(:display_detail, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
           end
 
           it 'call display_compact_table' do
             expect(Formatador).to receive(:display_compact_table).with(dummy_key: 'dummy_data')
 
-            @output.send(:display_details, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
+            @output.send(:display_detail, { dummy_key: 'dummy_data' }, exclude_keys: [:dummy_key])
           end
         end
 
