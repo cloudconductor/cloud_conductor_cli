@@ -1,9 +1,9 @@
-require_relative 'output/table'
-require_relative 'output/json'
+require_relative 'outputter/table'
+require_relative 'outputter/json'
 
 module CloudConductorCli
   module Helpers
-    module Output
+    module Outputter
       def output(response)
         klass = Output.const_get(options[:format].to_s.camelize.to_sym)
         @output ||= klass.new

@@ -5,7 +5,7 @@ module CloudConductorCli
     module Base
       include Helpers::Record
       include Helpers::Input
-      include Helpers::Output
+      include Helpers::Outputter
 
       def self.included(klass)
         if klass.respond_to?(:superclass) && klass.superclass == Thor

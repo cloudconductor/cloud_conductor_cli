@@ -1,6 +1,6 @@
 module CloudConductorCli
   module Helpers
-    module Output
+    module Outputter
       class Json
         def output(response)
           puts response.body

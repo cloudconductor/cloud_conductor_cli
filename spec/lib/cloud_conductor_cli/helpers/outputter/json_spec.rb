@@ -1,6 +1,6 @@
 module CloudConductorCli
   module Helpers
-    module Output
+    module Outputter
       describe Json do
         before do
           @output = Json.new

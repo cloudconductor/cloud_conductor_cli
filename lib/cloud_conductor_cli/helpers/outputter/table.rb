@@ -4,7 +4,7 @@ require 'active_support/core_ext/string'
 
 module CloudConductorCli
   module Helpers
-    module Output
+    module Outputter
       class Table
         def output(response)
           value = JSON.parse(response.body)

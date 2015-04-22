@@ -1,6 +1,6 @@
 module CloudConductorCli
   module Helpers
-    module Output
+    module Outputter
       describe Table do
         before do
           @output = Table.new

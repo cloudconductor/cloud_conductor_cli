@@ -1,9 +1,9 @@
 module CloudConductorCli
   module Helpers
-    describe Output do
+    describe Outputter do
       before do
         @output = Object.new
-        @output.extend(Output)
+        @output.extend(Outputter)
         allow(@output).to receive(:puts)
       end
 
