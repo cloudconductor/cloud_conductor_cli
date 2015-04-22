@@ -14,8 +14,7 @@ module CloudConductorCli
       end
 
       def display_message(message, indent_level: 0, indent_spaces: 2)
-        indent = ' ' * indent_level * indent_spaces
-        puts indent + message
+        outputter.display_message message, indent_level: indent_level, indent_spaces: indent_spaces
       end
 
       def normal_exit(message = nil, exit_code = 0)

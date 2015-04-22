@@ -83,6 +83,26 @@ module CloudConductorCli
           end
         end
 
+        describe '#display_message' do
+          it 'display the given message to standard output' do
+            expect(@output).to receive(:puts).with('dummy message')
+
+            @output.send(:display_message, 'dummy message')
+          end
+
+          it 'display the given message to standard output' do
+            expect(@output).to receive(:puts).with('  dummy message')
+
+            @output.send(:display_message, 'dummy message', indent_level: 1)
+          end
+
+          it 'display the given message to standard output' do
+            expect(@output).to receive(:puts).with('    dummy message')
+
+            @output.send(:display_message, 'dummy message', indent_level: 1, indent_spaces: 4)
+          end
+        end
+
         describe '#verticalize' do
           it 'return arg if data is not hash' do
             expect(@output.send(:verticalize, 'dummy')).to eq('dummy')
