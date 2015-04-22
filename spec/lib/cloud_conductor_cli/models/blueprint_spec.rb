@@ -18,9 +18,8 @@ module CloudConductorCli
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(blueprint).to receive(:find_id_by).with(:blueprint, :name, anything).and_return(mock_blueprint[:id])
         allow(blueprint).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+        allow(blueprint).to receive(:output)
         allow(blueprint).to receive(:display_message)
-        allow(blueprint).to receive(:display_list)
-        allow(blueprint).to receive(:display_details)
       end
 
       describe '#list' do
@@ -40,7 +39,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(blueprint).to receive(:display_list).with([mock_blueprint.stringify_keys])
+          expect(blueprint).to receive(:output).with(mock_response)
           blueprint.list
         end
       end
@@ -62,7 +61,7 @@ module CloudConductorCli
         end
 
         it 'display record details' do
-          expect(blueprint).to receive(:display_details).with(mock_blueprint.stringify_keys)
+          expect(blueprint).to receive(:output).with(mock_response)
           blueprint.show('blueprint_name')
         end
       end
@@ -88,7 +87,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(blueprint).to receive(:display_message)
-          expect(blueprint).to receive(:display_details).with(mock_blueprint.stringify_keys)
+          expect(blueprint).to receive(:output).with(mock_response)
           blueprint.create
         end
       end
@@ -114,7 +113,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(blueprint).to receive(:display_message)
-          expect(blueprint).to receive(:display_details).with(mock_blueprint.stringify_keys)
+          expect(blueprint).to receive(:output).with(mock_response)
           blueprint.update('blueprint_name')
         end
       end

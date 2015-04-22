@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List blueprints'
       def list
         response = connection.get('/blueprints')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show BLUEPRINT', 'Show blueprint details'
       def show(blueprint)
         id = find_id_by(:blueprint, :name, blueprint)
         response = connection.get("/blueprints/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create new blueprint'
@@ -35,7 +35,7 @@ module CloudConductorCli
         end
         response = connection.post('/blueprints', payload)
         display_message 'Create completed successfully.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'update BLUEPRINT', 'Update blueprint'
@@ -53,7 +53,7 @@ module CloudConductorCli
         end
         response = connection.put("/blueprints/#{id}", payload)
         display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'delete BLUEPRINT', 'Delete blueprint'

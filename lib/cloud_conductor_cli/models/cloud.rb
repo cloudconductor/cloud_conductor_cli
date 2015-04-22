@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List clouds'
       def list
         response = connection.get('/clouds')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show CLOUD', 'Show cloud details'
       def show(cloud)
         id = find_id_by(:cloud, :name, cloud)
         response = connection.get("/clouds/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create cloud'
@@ -33,7 +33,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :create).except('project').merge('project_id' => project_id)
         response = connection.post('/clouds', payload)
         display_message 'Create completed successfully.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'update CLOUD', 'Update cloud information'
@@ -49,7 +49,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :update)
         response = connection.put("/clouds/#{id}", payload)
         display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'delete CLOUD', 'Delete cloud'

@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List environments'
       def list
         response = connection.get('/environments')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show ENVIRONMENT', 'Show environment details'
       def show(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create environment from blueprint'
@@ -46,7 +46,7 @@ module CloudConductorCli
                          'user_attributes' => user_attributes)
         response = connection.post('/environments', payload)
         display_message 'Create accepted. Provisioning environment to specified cloud.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'update ENVIRONMENT', 'Update environment'
@@ -79,7 +79,7 @@ module CloudConductorCli
         end
         response = connection.put("/environments/#{id}", payload)
         display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'delete ENVIRONMENT', 'Delete environment'
@@ -100,7 +100,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :rebuild).except(:blueprint).merge(blueprint_id: blueprint_id)
         response = connection.post("/environments/#{id}/rebuild", payload)
         display_message 'Rebuild accepted. creating new environment.'
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'send-event ENVIRONMENT', 'Send event to environment'
@@ -117,7 +117,7 @@ module CloudConductorCli
       def list_event(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}/events")
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show-event ENVIRONMENT', 'Show event details'

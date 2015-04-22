@@ -22,9 +22,8 @@ module CloudConductorCli
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(cloud).to receive(:find_id_by).with(:cloud, :name, anything).and_return(mock_cloud[:id])
         allow(cloud).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+        allow(cloud).to receive(:output)
         allow(cloud).to receive(:display_message)
-        allow(cloud).to receive(:display_list)
-        allow(cloud).to receive(:display_details)
       end
 
       describe '#list' do
@@ -44,7 +43,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(cloud).to receive(:display_list).with([mock_cloud.stringify_keys])
+          expect(cloud).to receive(:output).with(mock_response)
           cloud.list
         end
       end
@@ -66,7 +65,7 @@ module CloudConductorCli
         end
 
         it 'display record details' do
-          expect(cloud).to receive(:display_details).with(mock_cloud.stringify_keys)
+          expect(cloud).to receive(:output).with(mock_response)
           cloud.show('cloud_name')
         end
       end
@@ -91,7 +90,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(cloud).to receive(:display_message)
-          expect(cloud).to receive(:display_details).with(mock_cloud.stringify_keys)
+          expect(cloud).to receive(:output).with(mock_response)
           cloud.create
         end
       end
@@ -116,7 +115,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(cloud).to receive(:display_message)
-          expect(cloud).to receive(:display_details).with(mock_cloud.stringify_keys)
+          expect(cloud).to receive(:output).with(mock_response)
           cloud.update('cloud_name')
         end
       end

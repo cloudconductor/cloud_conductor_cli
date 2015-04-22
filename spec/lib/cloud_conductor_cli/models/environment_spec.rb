@@ -38,9 +38,8 @@ module CloudConductorCli
         allow(environment).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
         allow(environment).to receive(:find_id_by).with(:blueprint, :name, anything).and_return(1)
         allow(environment).to receive(:find_id_by).with(:cloud, :name, anything).and_return(1)
+        allow(environment).to receive(:output)
         allow(environment).to receive(:display_message)
-        allow(environment).to receive(:display_list)
-        allow(environment).to receive(:display_details)
       end
 
       describe '#list' do
@@ -60,7 +59,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(environment).to receive(:display_list).with([mock_environment.stringify_keys])
+          expect(environment).to receive(:output).with(mock_response)
           environment.list
         end
       end
@@ -82,7 +81,7 @@ module CloudConductorCli
         end
 
         it 'display record details' do
-          expect(environment).to receive(:display_details).with(mock_environment.stringify_keys)
+          expect(environment).to receive(:output).with(mock_response)
           environment.show('environment_name')
         end
       end
@@ -114,7 +113,7 @@ module CloudConductorCli
           environment.options = mock_environment.except(:id, :system_id, :blueprint_id, :template_parameters, :status, :ip_address)
             .merge('system' => 'system_name', 'blueprint' => 'blueprint_name', 'clouds' => ['cloud_name'])
           expect(environment).to receive(:display_message)
-          expect(environment).to receive(:display_details).with(mock_environment.stringify_keys)
+          expect(environment).to receive(:output).with(mock_response)
           environment.create
         end
       end
@@ -140,7 +139,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(environment).to receive(:display_message)
-          expect(environment).to receive(:display_details).with(mock_environment.stringify_keys)
+          expect(environment).to receive(:output).with(mock_response)
           environment.update('environment_name')
         end
       end
@@ -209,7 +208,7 @@ module CloudConductorCli
         end
 
         it 'display message and record list' do
-          expect(environment).to receive(:display_list).with([mock_event.except(:results).stringify_keys])
+          expect(environment).to receive(:output).with(mock_response)
           environment.list_event('environment_name')
         end
       end

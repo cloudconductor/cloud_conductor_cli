@@ -42,9 +42,8 @@ module CloudConductorCli
         allow(application).to receive(:find_id_by).with(:history, :version, any_args).and_return(mock_application_history[:id])
         allow(application).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
         allow(application).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
+        allow(application).to receive(:output)
         allow(application).to receive(:display_message)
-        allow(application).to receive(:display_list)
-        allow(application).to receive(:display_details)
       end
 
       describe '#list' do
@@ -64,7 +63,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(application).to receive(:display_list).with([mock_application.stringify_keys])
+          expect(application).to receive(:output).with(mock_response)
           application.list
         end
       end
@@ -94,8 +93,8 @@ module CloudConductorCli
           end
 
           it 'display record details' do
-            expect(application).to receive(:display_details).with(mock_application.stringify_keys).ordered
-            expect(application).to receive(:display_list).with([mock_application_history.stringify_keys])
+            expect(application).to receive(:output).with(mock_response)
+            expect(application).to receive(:output).with(mock_response_histories)
             application.show('application_name')
           end
         end
@@ -110,8 +109,8 @@ module CloudConductorCli
           end
 
           it 'display record details' do
-            expect(application).to receive(:display_details).with(mock_application.stringify_keys)
-            expect(application).to receive(:display_details).with(mock_application_history.stringify_keys)
+            expect(application).to receive(:output).with(mock_response)
+            expect(application).to receive(:output).with(mock_response_history)
             application.show('application_name')
           end
         end
@@ -137,7 +136,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(application).to receive(:display_message)
-          expect(application).to receive(:display_details).with(mock_application.stringify_keys)
+          expect(application).to receive(:output).with(mock_response)
           application.create
         end
       end
@@ -162,7 +161,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(application).to receive(:display_message)
-          expect(application).to receive(:display_details).with(mock_application.stringify_keys)
+          expect(application).to receive(:output).with(mock_response)
           application.update('application_name')
         end
       end
@@ -209,7 +208,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(application).to receive(:display_message)
-          expect(application).to receive(:display_details).with(mock_application_history.stringify_keys)
+          expect(application).to receive(:output).with(mock_response)
           application.release(mock_application[:name])
         end
       end
@@ -236,7 +235,7 @@ module CloudConductorCli
 
         it 'display message and record details' do
           expect(application).to receive(:display_message)
-          expect(application).to receive(:display_details).with(mock_deployment.stringify_keys)
+          expect(application).to receive(:output).with(mock_response)
           application.deploy(mock_application[:name])
         end
       end
