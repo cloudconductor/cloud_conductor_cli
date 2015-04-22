@@ -125,11 +125,18 @@ module CloudConductorCli
       def show_event(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}/events/#{options['event_id']}")
-        event_details = JSON.parse(response.body)
-        display_message('Event Info', indent_level: 1)
-        display_details(event_details.except('results'))
-        display_message('Event Result Details', indent_level: 1)
-        display_list(event_details['results']) if event_details['results']
+        case options[:format]
+        when 'json' then
+          output(response)
+        when 'table' then
+          event_details = JSON.parse(response.body)
+          display_message 'Event Info', indent_level: 1
+          outputter.display_detail(event_details.except('results'))
+          display_message 'Event Result Details', indent_level: 1
+          outputter.display_list(event_details['results']) if event_details['results']
+        else
+          fail "Unsupported format #{options[:format]}"
+        end
       end
     end
   end

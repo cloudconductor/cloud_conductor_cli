@@ -21,8 +21,6 @@ module CloudConductorCli
           exit 1
         end
 
-        private
-
         def display_list(data, exclude_keys: [])
           display_data = convert_string(data)
           display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
@@ -39,6 +37,8 @@ module CloudConductorCli
           display_data = verticalize(display_data)
           Formatador.display_compact_table(display_data)
         end
+
+        private
 
         # convert false to 'false' and truncate long text
         def convert_string(data, max_length = 80)

@@ -5,10 +5,12 @@ module CloudConductorCli
   module Helpers
     module Outputter
       def output(response)
-        klass = Output.const_get(options[:format].to_s.camelize.to_sym)
-        @output ||= klass.new
+        outputter.output(response)
+      end
 
-        @output.output(response)
+      def outputter
+        klass = Outputter.const_get(options[:format].to_s.camelize.to_sym)
+        @outputter ||= klass.new
       end
 
       def display_message(message, indent_level: 0, indent_spaces: 2)

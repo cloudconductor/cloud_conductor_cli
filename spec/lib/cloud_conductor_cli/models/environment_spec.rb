@@ -40,6 +40,8 @@ module CloudConductorCli
         allow(environment).to receive(:find_id_by).with(:cloud, :name, anything).and_return(1)
         allow(environment).to receive(:output)
         allow(environment).to receive(:display_message)
+        allow(environment).to receive_message_chain(:outputter, :display_detail)
+        allow(environment).to receive_message_chain(:outputter, :display_list)
       end
 
       describe '#list' do
@@ -225,15 +227,15 @@ module CloudConductorCli
         end
 
         it 'request GET /environments/:id/events/:id' do
-          environment.options = { 'event_id' => mock_event[:id] }
+          environment.options = { 'event_id' => mock_event[:id], format: 'table'  }
           expect(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events/#{mock_event[:id]}")
           environment.show_event('environment_name')
         end
 
         it 'display message and record list' do
-          environment.options = { 'event_id' => mock_event[:id] }
-          expect(environment).to receive(:display_details).with(mock_event.except(:results).stringify_keys)
-          expect(environment).to receive(:display_list).with(mock_event[:results].map(&:stringify_keys))
+          environment.options = { 'event_id' => mock_event[:id], format: 'table' }
+          expect(environment.outputter).to receive(:display_detail).with(mock_event.except(:results).stringify_keys)
+          expect(environment.outputter).to receive(:display_list).with(mock_event[:results].map(&:stringify_keys))
           environment.show_event('environment_name')
         end
       end
