@@ -35,7 +35,7 @@ module CloudConductorCli
         end
         response = connection.post('/blueprints', payload)
 
-        display_message 'Create completed successfully.'
+        message('Create completed successfully.')
         output(response)
       end
 
@@ -54,7 +54,7 @@ module CloudConductorCli
         end
         response = connection.put("/blueprints/#{id}", payload)
 
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -63,7 +63,7 @@ module CloudConductorCli
         id = find_id_by(:blueprint, :name, blueprint)
         connection.delete("/blueprints/#{id}")
 
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
     end
   end

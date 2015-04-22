@@ -28,7 +28,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :create).except('cloud').merge('cloud_id' => cloud_id, 'os' => 'CentOS-6.5')
         response = connection.post('/base_images', payload)
 
-        display_message 'Create completed successfully.'
+        message('Create completed successfully.')
         output(response)
       end
 
@@ -40,7 +40,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :update)
         response = connection.put("/base_images/#{id}", payload)
 
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -49,7 +49,7 @@ module CloudConductorCli
         id = find_id_by(:base_image, :source_image, base_image)
         connection.delete("/base_images/#{id}")
 
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
     end
   end

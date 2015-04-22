@@ -6,7 +6,7 @@ module CloudConductorCli
           puts response.body
         end
 
-        def display_message(_message, _options)
+        def message(_message)
         end
       end
     end

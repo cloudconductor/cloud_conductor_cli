@@ -25,7 +25,7 @@ module CloudConductorCli
           display_data = convert_string(data)
           display_data = filter(display_data, exclude_keys) unless exclude_keys.empty?
           if display_data.empty?
-            display_message 'No records'
+            message 'No records'
           else
             Formatador.display_compact_table(display_data, display_data.first.keys)
           end
@@ -38,9 +38,8 @@ module CloudConductorCli
           Formatador.display_compact_table(display_data)
         end
 
-        def display_message(message, indent_level: 0, indent_spaces: 2)
-          indent = ' ' * indent_level * indent_spaces
-          puts indent + message
+        def message(message)
+          puts message
         end
 
         private

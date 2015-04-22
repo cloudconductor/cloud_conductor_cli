@@ -20,7 +20,7 @@ module CloudConductorCli
         allow(base_image).to receive(:find_id_by).with(:base_image, :source_image, anything).and_return(mock_base_image[:id])
         allow(base_image).to receive(:find_id_by).with(:cloud, :name, anything).and_return(1)
         allow(base_image).to receive(:output)
-        allow(base_image).to receive(:display_message)
+        allow(base_image).to receive(:message)
       end
 
       describe '#list' do
@@ -86,7 +86,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(base_image).to receive(:display_message)
+          expect(base_image).to receive(:message)
           expect(base_image).to receive(:output).with(mock_response)
           base_image.create
         end
@@ -111,7 +111,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(base_image).to receive(:display_message)
+          expect(base_image).to receive(:message)
           expect(base_image).to receive(:output).with(mock_response)
           base_image.update('source_image_id')
         end
@@ -134,7 +134,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(base_image).to receive(:display_message)
+          expect(base_image).to receive(:message)
           base_image.delete('source_image_id')
         end
       end

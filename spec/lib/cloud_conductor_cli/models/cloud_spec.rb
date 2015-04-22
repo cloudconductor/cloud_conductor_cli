@@ -23,7 +23,7 @@ module CloudConductorCli
         allow(cloud).to receive(:find_id_by).with(:cloud, :name, anything).and_return(mock_cloud[:id])
         allow(cloud).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(cloud).to receive(:output)
-        allow(cloud).to receive(:display_message)
+        allow(cloud).to receive(:message)
       end
 
       describe '#list' do
@@ -89,7 +89,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(cloud).to receive(:display_message)
+          expect(cloud).to receive(:message)
           expect(cloud).to receive(:output).with(mock_response)
           cloud.create
         end
@@ -114,7 +114,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(cloud).to receive(:display_message)
+          expect(cloud).to receive(:message)
           expect(cloud).to receive(:output).with(mock_response)
           cloud.update('cloud_name')
         end
@@ -137,7 +137,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(cloud).to receive(:display_message)
+          expect(cloud).to receive(:message)
           cloud.delete('cloud_name')
         end
       end

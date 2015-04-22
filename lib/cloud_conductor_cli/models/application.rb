@@ -36,7 +36,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :create).except('system').merge('system_id' => system_id)
         response = connection.post('/applications', payload)
 
-        display_message 'Create complete successfully.'
+        message('Create complete successfully.')
         output(response)
       end
 
@@ -48,7 +48,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :update)
         response = connection.put("/applications/#{id}", payload)
 
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -57,7 +57,7 @@ module CloudConductorCli
         id = find_id_by(:application, :name, application)
         connection.delete("/applications/#{id}")
 
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
 
       desc 'release APPLICATION', 'Release new application version'
@@ -73,7 +73,7 @@ module CloudConductorCli
         payload = declared(options, self.class, :release)
         response = connection.post("/applications/#{application_id}/histories", payload)
 
-        display_message 'Create complete successfully.'
+        message('Create complete successfully.')
         output(response)
       end
 
@@ -82,7 +82,7 @@ module CloudConductorCli
       #   application_id = find_id_by(:application, :name, application)
       #   history_id = find_id_by(:application_history, :version, version)
       #   connection.delete("/applications/#{application_id}/histories/#{history_id}")
-      #   display_message 'Delete completed successfully.'
+      #   message('Delete completed successfully.')
       # end
 
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
@@ -100,7 +100,7 @@ module CloudConductorCli
         end
         response = connection.post("/applications/#{application_id}/deploy", payload)
 
-        display_message 'Accepted successfully. Deploying application to environment.'
+        message('Accepted successfully. Deploying application to environment.')
         output(response)
       end
     end

@@ -33,7 +33,7 @@ module CloudConductorCli
 
         describe '#display_list' do
           before do
-            allow(@output).to receive(:display_message)
+            allow(@output).to receive(:message)
             allow(@output).to receive(:filter) { |data, _exclude_keys| data }
             allow(Formatador).to receive(:display_compact_table)
           end
@@ -44,8 +44,8 @@ module CloudConductorCli
             @output.send(:display_list, [dummy_key: 'dummy_data'], exclude_keys: ['dummy_key'])
           end
 
-          it 'call display_message if display_data is empty' do
-            expect(@output).to receive(:display_message).with('No records')
+          it 'call message if display_data is empty' do
+            expect(@output).to receive(:message).with('No records')
 
             @output.send(:display_list, [])
           end
@@ -83,23 +83,11 @@ module CloudConductorCli
           end
         end
 
-        describe '#display_message' do
+        describe '#message' do
           it 'display the given message to standard output' do
             expect(@output).to receive(:puts).with('dummy message')
 
-            @output.send(:display_message, 'dummy message')
-          end
-
-          it 'display the given message to standard output' do
-            expect(@output).to receive(:puts).with('  dummy message')
-
-            @output.send(:display_message, 'dummy message', indent_level: 1)
-          end
-
-          it 'display the given message to standard output' do
-            expect(@output).to receive(:puts).with('    dummy message')
-
-            @output.send(:display_message, 'dummy message', indent_level: 1, indent_spaces: 4)
+            @output.send(:message, 'dummy message')
           end
         end
 

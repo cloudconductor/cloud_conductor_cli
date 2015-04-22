@@ -17,7 +17,7 @@ module CloudConductorCli
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(project).to receive(:find_id_by).with(:project, :name, anything).and_return(mock_project[:id])
         allow(project).to receive(:output)
-        allow(project).to receive(:display_message)
+        allow(project).to receive(:message)
       end
 
       describe '#list' do
@@ -83,7 +83,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(project).to receive(:display_message)
+          expect(project).to receive(:message)
           expect(project).to receive(:output).with(mock_response)
           project.create
         end
@@ -108,7 +108,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(project).to receive(:display_message)
+          expect(project).to receive(:message)
           expect(project).to receive(:output).with(mock_response)
           project.update('project_name')
         end
@@ -131,7 +131,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(project).to receive(:display_message)
+          expect(project).to receive(:message)
           project.delete('project_name')
         end
       end

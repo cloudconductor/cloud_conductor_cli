@@ -32,7 +32,7 @@ module CloudConductorCli
         project_id = find_id_by(:project, :name, options[:project])
         payload = declared(options, self.class, :create).except('project').merge('project_id' => project_id)
         response = connection.post('/clouds', payload)
-        display_message 'Create completed successfully.'
+        message('Create completed successfully.')
         output(response)
       end
 
@@ -48,7 +48,7 @@ module CloudConductorCli
         id = find_id_by(:cloud, :name, cloud)
         payload = declared(options, self.class, :update)
         response = connection.put("/clouds/#{id}", payload)
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -56,7 +56,7 @@ module CloudConductorCli
       def delete(cloud)
         id = find_id_by(:cloud, :name, cloud)
         connection.delete("/clouds/#{id}")
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
     end
   end

@@ -43,7 +43,7 @@ module CloudConductorCli
         allow(application).to receive(:find_id_by).with(:system, :name, anything).and_return(1)
         allow(application).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
         allow(application).to receive(:output)
-        allow(application).to receive(:display_message)
+        allow(application).to receive(:message)
       end
 
       describe '#list' do
@@ -135,7 +135,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(application).to receive(:display_message)
+          expect(application).to receive(:message)
           expect(application).to receive(:output).with(mock_response)
           application.create
         end
@@ -160,7 +160,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(application).to receive(:display_message)
+          expect(application).to receive(:message)
           expect(application).to receive(:output).with(mock_response)
           application.update('application_name')
         end
@@ -183,7 +183,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(application).to receive(:display_message)
+          expect(application).to receive(:message)
           application.delete('application_name')
         end
       end
@@ -207,7 +207,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(application).to receive(:display_message)
+          expect(application).to receive(:message)
           expect(application).to receive(:output).with(mock_response)
           application.release(mock_application[:name])
         end
@@ -234,7 +234,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(application).to receive(:display_message)
+          expect(application).to receive(:message)
           expect(application).to receive(:output).with(mock_response)
           application.deploy(mock_application[:name])
         end

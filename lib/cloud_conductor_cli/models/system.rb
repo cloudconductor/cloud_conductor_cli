@@ -27,7 +27,7 @@ module CloudConductorCli
         project_id = find_id_by(:project, :name, options[:project])
         payload = declared(options, self.class, :create).except('project').merge('project_id' => project_id)
         response = connection.post('/systems', payload)
-        display_message 'Create completed successfully.'
+        message('Create completed successfully.')
         output(response)
       end
 
@@ -39,7 +39,7 @@ module CloudConductorCli
         id = find_id_by(:system, :name, system)
         payload = declared(options, self.class, :update)
         response = connection.put("/systems/#{id}", payload)
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -47,7 +47,7 @@ module CloudConductorCli
       def delete(system)
         id = find_id_by(:system, :name, system)
         connection.delete("/systems/#{id}")
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
 
       desc 'switch SYSTEM', 'Switch primary environment'
@@ -57,7 +57,7 @@ module CloudConductorCli
         environment_id = find_id_by(:environment, :name, options['environment'])
         payload = declared(options, self.class, :switch).except('environment').merge('environment_id' => environment_id)
         response = connection.put("/systems/#{id}/switch", payload)
-        display_message 'Switch completed successfully.'
+        message('Switch completed successfully.')
         output(response)
       end
     end

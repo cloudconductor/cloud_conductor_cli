@@ -19,7 +19,7 @@ module CloudConductorCli
         allow(blueprint).to receive(:find_id_by).with(:blueprint, :name, anything).and_return(mock_blueprint[:id])
         allow(blueprint).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(blueprint).to receive(:output)
-        allow(blueprint).to receive(:display_message)
+        allow(blueprint).to receive(:message)
       end
 
       describe '#list' do
@@ -86,7 +86,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(blueprint).to receive(:display_message)
+          expect(blueprint).to receive(:message)
           expect(blueprint).to receive(:output).with(mock_response)
           blueprint.create
         end
@@ -112,7 +112,7 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(blueprint).to receive(:display_message)
+          expect(blueprint).to receive(:message)
           expect(blueprint).to receive(:output).with(mock_response)
           blueprint.update('blueprint_name')
         end
@@ -135,7 +135,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(blueprint).to receive(:display_message)
+          expect(blueprint).to receive(:message)
           blueprint.delete('blueprint_name')
         end
       end

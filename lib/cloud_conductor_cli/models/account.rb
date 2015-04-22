@@ -29,7 +29,7 @@ module CloudConductorCli
                          'admin' => options['admin'] ? 1 : 0)
         response = connection.post('/accounts', payload)
 
-        display_message 'Create completed successfully.'
+        message('Create completed successfully.')
         output(response)
       end
 
@@ -45,7 +45,7 @@ module CloudConductorCli
                          'admin' => options['admin'] ? 1 : 0)
         response = connection.put("/accounts/#{id}", payload)
 
-        display_message 'Update completed successfully.'
+        message('Update completed successfully.')
         output(response)
       end
 
@@ -54,7 +54,7 @@ module CloudConductorCli
         id = find_id_by(:account, :email, account)
         connection.delete("/accounts/#{id}")
 
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
     end
   end

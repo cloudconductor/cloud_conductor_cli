@@ -13,8 +13,8 @@ module CloudConductorCli
         @outputter ||= klass.new
       end
 
-      def display_message(message, indent_level: 0, indent_spaces: 2)
-        outputter.display_message message, indent_level: indent_level, indent_spaces: indent_spaces
+      def message(message, indent_level: 0, indent_spaces: 2)
+        outputter.message(' ' * indent_spaces * indent_level + message)
       end
 
       def normal_exit(message = nil, exit_code = 0)

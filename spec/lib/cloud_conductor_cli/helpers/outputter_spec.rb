@@ -5,13 +5,23 @@ module CloudConductorCli
         @output = Object.new
         @output.extend(Outputter)
         allow(@output).to receive(:puts)
+        allow(@output).to receive_message_chain(:outputter, :message)
+        allow(@output).to receive_message_chain(:outputter, :output)
       end
 
-      describe '#display_message' do
-        it 'call display_message method for outputter instance' do
-          expect(@output).to receive_message_chain(:outputter, :display_message).with('dummy message', indent_level: 1, indent_spaces: 4)
+      describe '#output' do
+        it 'call output method for outputter instance' do
+          expect(@output).to receive_message_chain(:outputter, :output).with('dummy response')
 
-          @output.display_message 'dummy message', indent_level: 1, indent_spaces: 4
+          @output.output 'dummy response'
+        end
+      end
+
+      describe '#message' do
+        it 'call message method for outputter instance' do
+          expect(@output).to receive_message_chain(:outputter, :message).with('    dummy message')
+
+          @output.message 'dummy message', indent_level: 1, indent_spaces: 4
         end
       end
 
@@ -50,7 +60,6 @@ module CloudConductorCli
 
       describe '#normal_exit' do
         before do
-          allow(@output).to receive(:display_message)
           allow(@output).to receive(:exit)
         end
 
