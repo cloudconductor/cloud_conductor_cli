@@ -11,9 +11,9 @@ module CloudConductorCli
 
       def read_user_inputs(parameters)
         parameters.each_with_object({}) do |(pattern_name, params), result|
-          display_message "Input #{pattern_name} Parameters"
+          puts "Input #{pattern_name} Parameters"
           result[pattern_name] = params.each_with_object({}) do |(key_name, options), inputs|
-            display_message("#{key_name}: #{options['Description']}", indent_level: 1)
+            puts "  #{key_name}: #{options['Description']}"
             input = nil
             loop do
               input = Readline.readline("  Default [#{options['Default']}] > ")
@@ -21,7 +21,7 @@ module CloudConductorCli
               begin
                 input = Integer(input) if options['Type'] == 'Number'
               rescue ArgumentError
-                display_message("Invalid Number #{input}", indent_level: 1)
+                puts "  Invalid Number #{input}"
                 next
               end
               break if validate_parameter(input, options)
@@ -30,7 +30,7 @@ module CloudConductorCli
           end
         end
       rescue Interrupt
-        display_message "\n"
+        puts "\n"
         exit
       end
 

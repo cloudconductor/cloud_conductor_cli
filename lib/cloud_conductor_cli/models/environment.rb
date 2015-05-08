@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List environments'
       def list
         response = connection.get('/environments')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show ENVIRONMENT', 'Show environment details'
       def show(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create environment from blueprint'
@@ -45,8 +45,8 @@ module CloudConductorCli
                          'template_parameters' => template_parameters,
                          'user_attributes' => user_attributes)
         response = connection.post('/environments', payload)
-        display_message 'Create accepted. Provisioning environment to specified cloud.'
-        display_details(JSON.parse(response.body))
+        message('Create accepted. Provisioning environment to specified cloud.')
+        output(response)
       end
 
       desc 'update ENVIRONMENT', 'Update environment'
@@ -78,15 +78,15 @@ module CloudConductorCli
           payload.merge!('user_attributes' => user_attributes)
         end
         response = connection.put("/environments/#{id}", payload)
-        display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+        message('Update completed successfully.')
+        output(response)
       end
 
       desc 'delete ENVIRONMENT', 'Delete environment'
       def delete(environment)
         id = find_id_by(:environment, :name, environment)
         connection.delete("/environments/#{id}")
-        display_message 'Delete completed successfully.'
+        message('Delete completed successfully.')
       end
 
       desc 'rebuild ENVIRONMENT', 'Rebuild environment'
@@ -99,8 +99,8 @@ module CloudConductorCli
         id = find_id_by(:environment, :name, environment)
         payload = declared(options, self.class, :rebuild).except(:blueprint).merge(blueprint_id: blueprint_id)
         response = connection.post("/environments/#{id}/rebuild", payload)
-        display_message 'Rebuild accepted. creating new environment.'
-        display_details(JSON.parse(response.body))
+        message('Rebuild accepted. creating new environment.')
+        output(response)
       end
 
       desc 'send-event ENVIRONMENT', 'Send event to environment'
@@ -110,14 +110,14 @@ module CloudConductorCli
         payload = declared(options, self.class, :send_event)
         response = connection.post("/environments/#{id}/events", payload)
         event_id = JSON.parse(response.body)['event_id']
-        display_message "Event '#{options['event']}' accepted. event_id: #{event_id}"
+        message("Event '#{options['event']}' accepted. event_id: #{event_id}")
       end
 
       desc 'list-event ENVIRONMENT', 'List events'
       def list_event(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}/events")
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show-event ENVIRONMENT', 'Show event details'
@@ -125,11 +125,18 @@ module CloudConductorCli
       def show_event(environment)
         id = find_id_by(:environment, :name, environment)
         response = connection.get("/environments/#{id}/events/#{options['event_id']}")
-        event_details = JSON.parse(response.body)
-        display_message('Event Info', indent_level: 1)
-        display_details(event_details.except('results'))
-        display_message('Event Result Details', indent_level: 1)
-        display_list(event_details['results']) if event_details['results']
+        case options[:format]
+        when 'json' then
+          output(response)
+        when 'table' then
+          event_details = JSON.parse(response.body)
+          message('Event Info', indent_level: 1)
+          outputter.display_detail(event_details.except('results'))
+          message('Event Result Details', indent_level: 1)
+          outputter.display_list(event_details['results']) if event_details['results']
+        else
+          fail "Unsupported format #{options[:format]}"
+        end
       end
     end
   end

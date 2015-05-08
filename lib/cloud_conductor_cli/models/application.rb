@@ -8,7 +8,7 @@ module CloudConductorCli
       desc 'list', 'List applications'
       def list
         response = connection.get('/applications')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show APPLICATION', 'Show application details'
@@ -16,14 +16,14 @@ module CloudConductorCli
       def show(application)
         id = find_id_by(:application, :name, application)
         response = connection.get("/applications/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
         if options[:version]
           history_id = find_id_by(:history, :version, options[:version], parent_model: :application, parent_id: id)
           response = connection.get("/applications/#{id}/histories/#{history_id}")
-          display_details(JSON.parse(response.body))
+          output(response)
         else
           response = connection.get("/applications/#{id}/histories")
-          display_list(JSON.parse(response.body))
+          output(response)
         end
       end
 
@@ -35,8 +35,9 @@ module CloudConductorCli
         system_id = find_id_by(:system, :name, options['system'])
         payload = declared(options, self.class, :create).except('system').merge('system_id' => system_id)
         response = connection.post('/applications', payload)
-        display_message 'Create complete successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Create complete successfully.')
+        output(response)
       end
 
       desc 'update APPLICATION', 'Update application'
@@ -46,15 +47,17 @@ module CloudConductorCli
         id = find_id_by(:application, :name, application)
         payload = declared(options, self.class, :update)
         response = connection.put("/applications/#{id}", payload)
-        display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Update completed successfully.')
+        output(response)
       end
 
       desc 'delete APPLICATION', 'Delete application'
       def delete(application)
         id = find_id_by(:application, :name, application)
         connection.delete("/applications/#{id}")
-        display_message 'Delete completed successfully.'
+
+        message('Delete completed successfully.')
       end
 
       desc 'release APPLICATION', 'Release new application version'
@@ -69,8 +72,9 @@ module CloudConductorCli
         application_id = find_id_by(:application, :name, application)
         payload = declared(options, self.class, :release)
         response = connection.post("/applications/#{application_id}/histories", payload)
-        display_message 'Create complete successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Create complete successfully.')
+        output(response)
       end
 
       # desc 'delete-version APPLICATION VERSION', 'Delete application version'
@@ -78,7 +82,7 @@ module CloudConductorCli
       #   application_id = find_id_by(:application, :name, application)
       #   history_id = find_id_by(:application_history, :version, version)
       #   connection.delete("/applications/#{application_id}/histories/#{history_id}")
-      #   display_message 'Delete completed successfully.'
+      #   message('Delete completed successfully.')
       # end
 
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
@@ -95,8 +99,9 @@ module CloudConductorCli
           payload.merge!('application_history_id' => application_history_id)
         end
         response = connection.post("/applications/#{application_id}/deploy", payload)
-        display_message 'Accepted successfully. Deploying application to environment.'
-        display_details(JSON.parse(response.body))
+
+        message('Accepted successfully. Deploying application to environment.')
+        output(response)
       end
     end
   end

@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List base_images'
       def list
         response = connection.get('/base_images')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show BASE_IMAGE', 'Show base_image details'
       def show(base_image)
         id = find_id_by(:base_image, :source_image, base_image)
         response = connection.get("/base_images/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create base_image'
@@ -27,8 +27,9 @@ module CloudConductorCli
         cloud_id = find_id_by(:cloud, :name, options[:cloud])
         payload = declared(options, self.class, :create).except('cloud').merge('cloud_id' => cloud_id, 'os' => 'CentOS-6.5')
         response = connection.post('/base_images', payload)
-        display_message 'Create completed successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Create completed successfully.')
+        output(response)
       end
 
       desc 'update BASE_IMAGE', 'Update base_image information'
@@ -38,15 +39,17 @@ module CloudConductorCli
         id = find_id_by(:base_image, :source_image, base_image)
         payload = declared(options, self.class, :update)
         response = connection.put("/base_images/#{id}", payload)
-        display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Update completed successfully.')
+        output(response)
       end
 
       desc 'delete BASE_IMAGE', 'Delete base_image'
       def delete(base_image)
         id = find_id_by(:base_image, :source_image, base_image)
         connection.delete("/base_images/#{id}")
-        display_message 'Delete completed successfully.'
+
+        message('Delete completed successfully.')
       end
     end
   end

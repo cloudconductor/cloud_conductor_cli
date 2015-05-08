@@ -6,6 +6,7 @@ module CloudConductorCli
           new_model = Class.new(Thor)
           expect(new_model).to receive(:class_option).with(:host, hash_including(aliases: '-H'))
           expect(new_model).to receive(:class_option).with(:port, hash_including(aliases: '-p'))
+          expect(new_model).to receive(:class_option).with(:format, hash_including(aliases: '-f'))
           new_model.send(:include, Models::Base)
         end
       end
