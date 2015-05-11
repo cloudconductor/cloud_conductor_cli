@@ -31,6 +31,7 @@ module CloudConductorCli
       method_option :system, type: :string, required: true, desc: 'Target system name or id'
       method_option :name, type: :string, required: true, desc: 'Application name'
       method_option :description, type: :string, desc: 'Application description'
+      method_option :domain, type: :string, desc: 'Application domain'
       def create
         system_id = find_id_by(:system, :name, options['system'])
         payload = declared(options, self.class, :create).except('system').merge('system_id' => system_id)
@@ -43,6 +44,7 @@ module CloudConductorCli
       desc 'update APPLICATION', 'Update application'
       method_option :name,        type: :string, desc: 'Application name'
       method_option :description, type: :string, desc: 'Application description'
+      method_option :domain,      type: :string, desc: 'Application domain'
       def update(application)
         id = find_id_by(:application, :name, application)
         payload = declared(options, self.class, :update)
@@ -88,8 +90,6 @@ module CloudConductorCli
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
       method_option :version, type: :string, desc: 'Application version (use latest version if unspecified)'
       method_option :environment, type: :string, required: true, desc: 'Target environment name or id'
-      # TODO: Fix API
-      # method_option :domain, type: :string, desc: 'Application domain'
       def deploy(application)
         application_id = find_id_by(:application, :name, application)
         environment_id = find_id_by(:environment, :name, options['environment'])
