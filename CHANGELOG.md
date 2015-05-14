@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 1.0.2 (2015/05/14)
+
+  - Support JSON as output format.
+
 ## version 1.0.0 (2015/03/27)
 
   - Support CloudConductor v1.0 API.
