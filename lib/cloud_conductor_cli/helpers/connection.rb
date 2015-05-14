@@ -4,7 +4,7 @@ require 'rack'
 module CloudConductorCli
   module Helpers
     class Connection
-      include Helpers::Output
+      include Helpers::Outputter
       attr_reader :faraday, :api_prefix, :auth_token
 
       def initialize(host = nil, port = nil, auth_id = nil, auth_password = nil)

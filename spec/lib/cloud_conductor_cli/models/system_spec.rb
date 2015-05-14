@@ -21,9 +21,8 @@ module CloudConductorCli
         allow(system).to receive(:find_id_by).with(:system, :name, anything).and_return(mock_system[:id])
         allow(system).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(system).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
-        allow(system).to receive(:display_message)
-        allow(system).to receive(:display_list)
-        allow(system).to receive(:display_details)
+        allow(system).to receive(:output)
+        allow(system).to receive(:message)
       end
 
       describe '#list' do
@@ -43,7 +42,7 @@ module CloudConductorCli
         end
 
         it 'display record list' do
-          expect(system).to receive(:display_list).with([mock_system.stringify_keys])
+          expect(system).to receive(:output).with(mock_response)
           system.list
         end
       end
@@ -65,7 +64,7 @@ module CloudConductorCli
         end
 
         it 'display record details' do
-          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          expect(system).to receive(:output).with(mock_response)
           system.show('system_name')
         end
       end
@@ -89,8 +88,8 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(system).to receive(:display_message)
-          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          expect(system).to receive(:message)
+          expect(system).to receive(:output).with(mock_response)
           system.create
         end
       end
@@ -114,8 +113,8 @@ module CloudConductorCli
         end
 
         it 'display message and record details' do
-          expect(system).to receive(:display_message)
-          expect(system).to receive(:display_details).with(mock_system.stringify_keys)
+          expect(system).to receive(:message)
+          expect(system).to receive(:output).with(mock_response)
           system.update('system_name')
         end
       end
@@ -137,7 +136,7 @@ module CloudConductorCli
         end
 
         it 'display message' do
-          expect(system).to receive(:display_message)
+          expect(system).to receive(:message)
           system.delete('system_name')
         end
       end
@@ -162,8 +161,8 @@ module CloudConductorCli
 
         it 'display message and record details' do
           system.options = { 'environment' => 'environment_name' }
-          expect(system).to receive(:display_message)
-          expect(system).to receive(:display_details).with(mock_system.merge(primary_environment_id: 1).stringify_keys)
+          expect(system).to receive(:message)
+          expect(system).to receive(:output).with(mock_response)
           system.switch('system_name')
         end
       end

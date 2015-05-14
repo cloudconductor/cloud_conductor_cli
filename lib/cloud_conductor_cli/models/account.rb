@@ -8,14 +8,14 @@ module CloudConductorCli
       desc 'list', 'List accounts'
       def list
         response = connection.get('/accounts')
-        display_list(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'show ACCOUNT', 'Show account details'
       def show(account)
         id = find_id_by(:account, :email, account)
         response = connection.get("/accounts/#{id}")
-        display_details(JSON.parse(response.body))
+        output(response)
       end
 
       desc 'create', 'Create new account'
@@ -28,8 +28,9 @@ module CloudConductorCli
                   .merge('password_confirmation' => options['password'],
                          'admin' => options['admin'] ? 1 : 0)
         response = connection.post('/accounts', payload)
-        display_message 'Create completed successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Create completed successfully.')
+        output(response)
       end
 
       desc 'update ACCOUNT', 'Update account'
@@ -43,15 +44,17 @@ module CloudConductorCli
                   .merge('password_confirmation' => options['password'],
                          'admin' => options['admin'] ? 1 : 0)
         response = connection.put("/accounts/#{id}", payload)
-        display_message 'Update completed successfully.'
-        display_details(JSON.parse(response.body))
+
+        message('Update completed successfully.')
+        output(response)
       end
 
       desc 'delete ACCOUNT', 'Delete account'
       def delete(account)
         id = find_id_by(:account, :email, account)
         connection.delete("/accounts/#{id}")
-        display_message 'Delete completed successfully.'
+
+        message('Delete completed successfully.')
       end
     end
   end

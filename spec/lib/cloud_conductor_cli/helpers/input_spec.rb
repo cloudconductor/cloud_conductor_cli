@@ -27,7 +27,7 @@ module CloudConductorCli
 
       describe '#read_user_inputs' do
         before do
-          allow(@input).to receive(:display_message)
+          allow(@input).to receive(:puts)
           allow(@input).to receive(:validate_parameter).and_return(true)
           allow(Readline).to receive(:readline).and_return('dummy_input')
 
@@ -41,9 +41,9 @@ module CloudConductorCli
           }
         end
 
-        it 'call display_message' do
-          expect(@input).to receive(:display_message).with('Input dummy_pattern_name Parameters')
-          expect(@input).to receive(:display_message).with('dummy_params: dummy_description', indent_level: 1)
+        it 'call puts' do
+          expect(@input).to receive(:puts).with('Input dummy_pattern_name Parameters')
+          expect(@input).to receive(:puts).with('  dummy_params: dummy_description')
 
           @input.read_user_inputs(@parameters)
         end
