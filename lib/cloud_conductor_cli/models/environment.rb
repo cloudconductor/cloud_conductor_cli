@@ -130,10 +130,16 @@ module CloudConductorCli
           output(response)
         when 'table' then
           event_details = JSON.parse(response.body)
-          message('Event Info', indent_level: 1)
-          outputter.display_detail(event_details.except('results'))
-          message('Event Result Details', indent_level: 1)
-          outputter.display_list(event_details['results']) if event_details['results']
+          message('Event info', indent_level: 1)
+          outputter.display_detail(event_details.except('task_results'))
+
+          message('Task results', indent_level: 1)
+          task_results = (event_details['task_results'] || []).map { |result| result.except('nodes') }
+          outputter.display_list(task_results)
+
+          message('Node results', indent_level: 1)
+          node_results = ((event_details['task_results'] || []).map { |result| result['nodes'] }).flatten
+          outputter.display_list(node_results)
         else
           fail "Unsupported format #{options[:format]}"
         end
