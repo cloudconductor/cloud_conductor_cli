@@ -20,14 +20,26 @@ module CloudConductorCli
       let(:mock_event) do
         {
           id: '77970fa0-5cd8-49e2-8a3b-4b4502892628',
-          type: 'configure',
-          finished: true,
-          suceeded: true,
-          results: [{
-            hostname: 'test',
-            return_code: 0,
-            started_at: '2015-03-12T16:50:24.186+09:00',
-            finished_at: '2015-03-12T16:51:24.186+09:00'
+          name: 'configure',
+          status: 'success',
+          started_at: '2015-09-14T14:12:35.000+09:00',
+          finished_at: '2015-09-14T14:13:10.000+09:00',
+          task_results: [{
+            id: '77970fa0-5cd8-49e2-8a3b-4b4502892628',
+            no: 0,
+            name: 'configure',
+            status: 'success',
+            started_at: '2015-09-14T14:12:45.000+09:00',
+            finished_at: '2015-09-14T14:12:52.000+09:00',
+            nodes: [{
+              id: '77970fa0-5cd8-49e2-8a3b-4b4502892628',
+              no: 0,
+              node: 'test',
+              status: 'success',
+              started_at: '2015-09-14T14:12:45.000+09:00',
+              finished_at: '2015-09-14T14:12:51.000+09:00',
+              log: 'log message'
+            }]
           }]
         }
       end
@@ -194,7 +206,7 @@ module CloudConductorCli
       end
 
       describe '#list_event' do
-        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_event.except(:results)])) }
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_event.except(:task_results)])) }
         before do
           allow(environment.connection).to receive(:get).with("/environments/#{mock_environment[:id]}/events").and_return(mock_response)
         end
@@ -234,8 +246,13 @@ module CloudConductorCli
 
         it 'display message and record list' do
           environment.options = { 'event_id' => mock_event[:id], format: 'table' }
-          expect(environment.outputter).to receive(:display_detail).with(mock_event.except(:results).stringify_keys)
-          expect(environment.outputter).to receive(:display_list).with(mock_event[:results].map(&:stringify_keys))
+          expect(environment.outputter).to receive(:display_detail).with(mock_event.except(:task_results).stringify_keys)
+
+          expect_task_results = mock_event[:task_results].map { |result| result.except(:nodes).stringify_keys }
+          expect(environment.outputter).to receive(:display_list).with(expect_task_results)
+
+          expect_node_results = mock_event[:task_results].map { |result| result[:nodes].map(&:stringify_keys) }.flatten
+          expect(environment.outputter).to receive(:display_list).with(expect_node_results)
           environment.show_event('environment_name')
         end
       end
