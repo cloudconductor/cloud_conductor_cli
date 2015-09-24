@@ -95,9 +95,12 @@ module CloudConductorCli
       method_option :description, type: :string, desc: 'Environment description'
       method_option :switch, type: :boolean, desc: 'Switch system primary environment automatically', default: false
       def rebuild(environment)
-        blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+        payload = declared(options, self.class, :rebuild)
+        if options[:blueprint]
+          blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+          payload = payload.except(:blueprint).merge(blueprint_id: blueprint_id)
+        end
         id = find_id_by(:environment, :name, environment)
-        payload = declared(options, self.class, :rebuild).except(:blueprint).merge(blueprint_id: blueprint_id)
         response = connection.post("/environments/#{id}/rebuild", payload)
         message('Rebuild accepted. creating new environment.')
         output(response)
