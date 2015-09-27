@@ -52,16 +52,28 @@ module CloudConductorCli
         JSON.parse(response.body)
       end
 
-      def build_template_parameters(options)
-        if options['parameter_file']
-          input_parameters = JSON.parse(File.read(options['parameter_file']))
-        else
-          if options['blueprint']
-            blueprint_name = options['blueprint']
-          elsif options['name']
-            environment = find_by(:environment, name: options['name'])
-            blueprint_name = environment ? environment['blueprint_id'] : nil
+      def default_parameters(blueprint_name)
+        defaults = template_parameters(blueprint_name)
+        defaults.each do |_, parameters|
+          parameters.each do |key, value|
+            parameters[key] = value['Default']
           end
+        end
+      end
+
+      def build_template_parameters(environment, options)
+        if options['blueprint']
+          blueprint_name = options['blueprint']
+        elsif environment
+          environment_id = find_id_by(:environment, :name, environment)
+          environment = find_by(:environment, id: environment_id)
+          blueprint_name = environment ? environment['blueprint_id'] : nil
+        end
+
+        if options['parameter_file']
+          defaults = default_parameters(blueprint_name)
+          input_parameters = defaults.deep_merge(JSON.parse(File.read(options['parameter_file'])))
+        else
           input_parameters = blueprint_name ? input_template_parameters(blueprint_name) : {}
         end
         JSON.dump(input_parameters || {})
