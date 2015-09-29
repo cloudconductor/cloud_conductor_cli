@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cloud_conductor_cli (1.0.2)
+    cloud_conductor_cli (1.1.0)
       activesupport (~> 4.1)
       faraday
       formatador
@@ -12,7 +12,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.1)
+    activesupport (4.2.4)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -57,7 +57,7 @@ GEM
       rubocop (~> 0.20)
     hitimes (1.2.2)
     i18n (0.7.0)
-    json (1.8.2)
+    json (1.8.3)
     json_expressions (0.8.3)
     listen (2.8.5)
       celluloid (>= 0.15.2)
@@ -65,7 +65,7 @@ GEM
       rb-inotify (>= 0.9)
     lumberjack (1.0.9)
     method_source (0.8.2)
-    minitest (5.6.1)
+    minitest (5.8.0)
     multipart-post (2.0.0)
     nenv (0.2.0)
     notiffany (0.0.6)
@@ -87,13 +87,13 @@ GEM
     pry-stack_explorer (0.4.9.2)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
-    rack (1.6.0)
+    rack (1.6.4)
     rainbow (2.0.0)
     rake (10.4.2)
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    rb-readline (0.5.2)
+    rb-readline (0.5.3)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
