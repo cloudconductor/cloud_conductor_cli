@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 1.1.0 (2015/09/30)
+
+  - Support new format with metronome on `list-event` and `show-event`
+
 ## version 1.0.2 (2015/05/14)
 
   - Support JSON as output format.
