@@ -36,7 +36,7 @@ module CloudConductorCli
             priority: (options['clouds'].size - i) * 10 }
         end
         candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
-        template_parameters = build_template_parameters(options)
+        template_parameters = build_template_parameters(nil, options)
         user_attributes = build_user_attributes(options)
         payload = declared(options, self.class, :create)
                   .except('system', 'blueprint', 'clouds', 'parameter_file', 'user_attribute_file')
@@ -70,7 +70,7 @@ module CloudConductorCli
           payload.merge!('candidates_attributes' => candidates_attributes)
         end
         if options['parameter_file']
-          template_parameters = build_template_parameters(options)
+          template_parameters = build_template_parameters(environment, options)
           payload.merge!('template_parameters' => template_parameters)
         end
         if options['user_attribute_file']
@@ -95,9 +95,12 @@ module CloudConductorCli
       method_option :description, type: :string, desc: 'Environment description'
       method_option :switch, type: :boolean, desc: 'Switch system primary environment automatically', default: false
       def rebuild(environment)
-        blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+        payload = declared(options, self.class, :rebuild)
+        if options[:blueprint]
+          blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+          payload = payload.except(:blueprint).merge(blueprint_id: blueprint_id)
+        end
         id = find_id_by(:environment, :name, environment)
-        payload = declared(options, self.class, :rebuild).except(:blueprint).merge(blueprint_id: blueprint_id)
         response = connection.post("/environments/#{id}/rebuild", payload)
         message('Rebuild accepted. creating new environment.')
         output(response)
@@ -130,10 +133,16 @@ module CloudConductorCli
           output(response)
         when 'table' then
           event_details = JSON.parse(response.body)
-          message('Event Info', indent_level: 1)
-          outputter.display_detail(event_details.except('results'))
-          message('Event Result Details', indent_level: 1)
-          outputter.display_list(event_details['results']) if event_details['results']
+          message('Event info', indent_level: 1)
+          outputter.display_detail(event_details.except('task_results'))
+
+          message('Task results', indent_level: 1)
+          task_results = (event_details['task_results'] || []).map { |result| result.except('nodes') }
+          outputter.display_list(task_results)
+
+          message('Node results', indent_level: 1)
+          node_results = ((event_details['task_results'] || []).map { |result| result['nodes'] }).flatten
+          outputter.display_list(node_results)
         else
           fail "Unsupported format #{options[:format]}"
         end

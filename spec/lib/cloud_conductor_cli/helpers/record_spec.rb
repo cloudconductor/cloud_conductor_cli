@@ -168,13 +168,17 @@ module CloudConductorCli
         end
 
         context 'with parameter_file' do
+          before do
+            allow(record).to receive(:default_parameters).and_return({})
+          end
+
           it 'call File.read' do
             expect(File).to receive(:read).with('/path/to/parameter_file')
-            record.build_template_parameters(options)
+            record.build_template_parameters(nil, options)
           end
 
           it 'returns template_parameters' do
-            result = record.build_template_parameters(options)
+            result = record.build_template_parameters(nil, options)
             expect(result).to eq(parameter_file)
           end
         end
@@ -183,11 +187,11 @@ module CloudConductorCli
           context 'with options[:blueprint]' do
             it 'call input_template_parameters' do
               expect(record).to receive(:input_template_parameters).with(options['blueprint'])
-              record.build_template_parameters(options.except('parameter_file'))
+              record.build_template_parameters(nil, options.except('parameter_file'))
             end
 
             it 'returns template_parameters' do
-              result = record.build_template_parameters(options.except('parameter_file'))
+              result = record.build_template_parameters(nil, options.except('parameter_file'))
               expect(result).to eq(parameter_file)
             end
           end
@@ -196,16 +200,17 @@ module CloudConductorCli
             let(:new_options) { options.except('parameter_file', 'blueprint') }
             let(:mock_environment) { { id: 1, blueprint_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
             before do
-              allow(record).to receive(:find_by).with(:environment, name: 'environment_name').and_return(mock_environment)
+              allow(record).to receive(:find_id_by).with(:environment, :name, 'environment_name').and_return(1)
+              allow(record).to receive(:find_by).with(:environment, id: 1).and_return(mock_environment)
             end
 
             it 'call input_template_parameters' do
               expect(record).to receive(:input_template_parameters).with(1)
-              record.build_template_parameters(new_options)
+              record.build_template_parameters('environment_name', new_options)
             end
 
             it 'returns template_parameters' do
-              result = record.build_template_parameters(new_options)
+              result = record.build_template_parameters('environment_name', new_options)
               expect(result).to eq(parameter_file)
             end
           end
