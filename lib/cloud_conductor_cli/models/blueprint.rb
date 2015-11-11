@@ -50,6 +50,52 @@ module CloudConductorCli
 
         message('Delete completed successfully.')
       end
+
+      desc 'pattern-list', 'List patterns are contained in blueprint'
+      def pattern_list(blueprint)
+        id = find_id_by(:blueprint, :name, blueprint)
+        response = connection.get("/blueprints/#{id}/patterns")
+        output(response)
+      end
+
+      desc 'pattern-add', 'Add pattern to blueprint'
+      method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
+      method_option :revision, type: :string, desc: 'Pattern revision'
+      method_option :os_version, type: :string, desc: 'OS version'
+      def pattern_add(blueprint)
+        id = find_id_by(:blueprint, :name, blueprint)
+        pattern_id = find_id_by(:pattern, :name, options[:pattern])
+        payload = declared(options, self.class, :pattern_add).except('pattern').merge('pattern_id' => pattern_id)
+        response = connection.post("/blueprints/#{id}/patterns", payload)
+
+        message('Add pattern completed successfully.')
+        output(response)
+      end
+
+      desc 'pattern-update', 'Update pattern on blueprint'
+      method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
+      method_option :revision, type: :string, desc: 'Pattern revision'
+      method_option :os_version, type: :string, desc: 'OS version'
+      def pattern_update(blueprint)
+        id = find_id_by(:blueprint, :name, blueprint)
+        pattern_id = find_id_by(:pattern, :name, options[:pattern])
+        payload = declared(options, self.class, :pattern_update).except('pattern')
+        response = connection.put("/blueprints/#{id}/patterns/#{pattern_id}", payload)
+
+        message('Update pattern completed successfully.')
+        output(response)
+      end
+
+      desc 'pattern-delete', 'Delete pattern from blueprint'
+      method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
+      def pattern_delete(blueprint)
+        id = find_id_by(:blueprint, :name, blueprint)
+        pattern_id = find_id_by(:pattern, :name, options[:pattern])
+        response = connection.delete("/blueprints/#{id}/patterns/#{pattern_id}")
+
+        message('Delete pattern completed successfully.')
+        output(response)
+      end
     end
   end
 end
