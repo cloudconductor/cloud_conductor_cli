@@ -51,6 +51,15 @@ module CloudConductorCli
         message('Delete completed successfully.')
       end
 
+      desc 'build', 'Build blueprint and images'
+      def build(blueprint)
+        id = find_id_by(:blueprint, :name, blueprint)
+        response = connection.post("/blueprints/#{id}/build")
+
+        message('Building blueprint has been accepted.')
+        output(response)
+      end
+
       desc 'pattern-list', 'List patterns are contained in blueprint'
       def pattern_list(blueprint)
         id = find_id_by(:blueprint, :name, blueprint)

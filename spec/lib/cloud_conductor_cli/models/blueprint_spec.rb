@@ -13,6 +13,14 @@ module CloudConductorCli
           description: 'blueprint description'
         }.with_indifferent_access
       end
+      let(:mock_blueprint_history) do
+        {
+          id: 1,
+          blueprint_id: 1,
+          version: 1,
+          consul_secret_key: 'Osc+R7O6NwYJFxm6Zqcxww=='
+        }.with_indifferent_access
+      end
       let(:mock_blueprint_pattern) do
         {
           id: 1,
@@ -144,6 +152,29 @@ module CloudConductorCli
         it 'display message' do
           expect(blueprint).to receive(:message)
           blueprint.delete('blueprint_name')
+        end
+      end
+
+      describe '#build' do
+        let(:mock_response) { double(status: 202, headers: [], body: JSON.dump(mock_blueprint_history)) }
+        before do
+          allow(blueprint.connection).to receive(:post).with("/blueprints/#{mock_blueprint[:id]}/build").and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['build'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request POST /blueprints/:id/build with payload' do
+          expect(blueprint.connection).to receive(:post).with("/blueprints/#{mock_blueprint[:id]}/build")
+          blueprint.build('blueprint_name')
+        end
+
+        it 'display message and record details' do
+          expect(blueprint).to receive(:message)
+          expect(blueprint).to receive(:output).with(mock_response)
+          blueprint.build('blueprint_name')
         end
       end
 
