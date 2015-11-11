@@ -60,14 +60,14 @@ module CloudConductorCli
         output(response)
       end
 
-      desc 'pattern-list', 'List patterns are contained in blueprint'
+      desc 'pattern-list BLUEPRINT', 'List patterns are contained in blueprint'
       def pattern_list(blueprint)
         id = find_id_by(:blueprint, :name, blueprint)
         response = connection.get("/blueprints/#{id}/patterns")
         output(response)
       end
 
-      desc 'pattern-add', 'Add pattern to blueprint'
+      desc 'pattern-add BLUEPRINT', 'Add pattern to blueprint'
       method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
       method_option :revision, type: :string, desc: 'Pattern revision'
       method_option :os_version, type: :string, desc: 'OS version'
@@ -81,7 +81,7 @@ module CloudConductorCli
         output(response)
       end
 
-      desc 'pattern-update', 'Update pattern on blueprint'
+      desc 'pattern-update BLUEPRINT', 'Update pattern on blueprint'
       method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
       method_option :revision, type: :string, desc: 'Pattern revision'
       method_option :os_version, type: :string, desc: 'OS version'
@@ -95,7 +95,7 @@ module CloudConductorCli
         output(response)
       end
 
-      desc 'pattern-delete', 'Delete pattern from blueprint'
+      desc 'pattern-delete BLUEPRINT', 'Delete pattern from blueprint'
       method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
       def pattern_delete(blueprint)
         id = find_id_by(:blueprint, :name, blueprint)
