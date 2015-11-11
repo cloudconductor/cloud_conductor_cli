@@ -73,14 +73,13 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:project, :name, :description, :patterns_json]
+          allowed_options = [:project, :name, :description]
           expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
         it 'request POST /blueprints with payload' do
-          patterns_json = JSON.dump([{ url: 'http://example.com/repo.git', revision: 'master' }])
-          blueprint.options = mock_blueprint.except(:id, :project_id).merge('project' => 'project_name', 'patterns_json' => patterns_json)
-          payload = blueprint.options.except('project', 'patterns_json').merge('project_id' => 1, 'patterns_attributes' => JSON.parse(patterns_json))
+          blueprint.options = mock_blueprint.except(:id, :project_id).merge(project: 'project_name')
+          payload = blueprint.options.except(:project).merge(project_id: 1)
           expect(blueprint.connection).to receive(:post).with('/blueprints', payload)
           blueprint.create
         end
@@ -99,15 +98,13 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:name, :description, :patterns_json]
+          allowed_options = [:name, :description]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
         it 'request PUT /blueprints/:id with payload' do
-          patterns_json = JSON.dump([{ url: 'http://example.com/repo.git', revision: 'master' }])
-          blueprint.options = mock_blueprint.except(:id, :project_id).merge('patterns_json' => patterns_json)
-          payload = blueprint.options.except('patterns_json').merge('patterns_attributes' => JSON.parse(patterns_json))
-          expect(blueprint.connection).to receive(:put).with("/blueprints/#{mock_blueprint[:id]}", payload)
+          blueprint.options = mock_blueprint.except(:id, :project_id)
+          expect(blueprint.connection).to receive(:put).with("/blueprints/#{mock_blueprint[:id]}", blueprint.options)
           blueprint.update('blueprint_name')
         end
 
