@@ -105,6 +105,42 @@ module CloudConductorCli
         message('Delete pattern completed successfully.')
         output(response)
       end
+
+      desc 'history-list BLUEPRINT', 'List patterns'
+      def history_list(blueprint)
+        blueprint_id = find_id_by(:blueprint, :name, blueprint)
+        response = connection.get("/blueprints/#{blueprint_id}/histories")
+        output(response)
+      end
+
+      desc 'history-show BLUEPRINT', 'Show bluepint history details'
+      method_option :version, type: :numeric, required: true, desc: 'Blueprint history version'
+      def history_show(blueprint)
+        blueprint_id = find_id_by(:blueprint, :name, blueprint)
+        response = connection.get("/blueprints/#{blueprint_id}/histories/#{options[:version]}")
+        case options[:format]
+        when 'json' then
+          output(response)
+        when 'table' then
+          blueprint_history = JSON.parse(response.body)
+          message('Blueprint history info', indent_level: 1)
+          outputter.display_detail(blueprint_history.except('pattern_snapshots'))
+
+          message('Pattern snapshots', indent_level: 1)
+          outputter.display_list(blueprint_history['pattern_snapshots'])
+        else
+          fail "Unsupported format #{options[:format]}"
+        end
+      end
+
+      desc 'history-delete BLUEPRINT', 'Delete blueprint history'
+      method_option :version, type: :numeric, required: true, desc: 'Blueprint history version'
+      def history_delete(blueprint)
+        blueprint_id = find_id_by(:blueprint, :name, blueprint)
+        connection.delete("/blueprints/#{blueprint_id}/histories/#{options[:version]}")
+
+        message('Delete completed successfully.')
+      end
     end
   end
 end

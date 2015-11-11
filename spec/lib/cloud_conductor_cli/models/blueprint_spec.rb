@@ -273,6 +273,83 @@ module CloudConductorCli
           blueprint.pattern_delete('blueprint_name')
         end
       end
+
+      describe '#history-list' do
+        let(:url) { "/blueprints/#{mock_blueprint_history[:blueprint_id]}/histories" }
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_blueprint_history])) }
+        before do
+          allow(blueprint.connection).to receive(:get).with(url).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['history_list'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request GET /blueprints/:id/histories' do
+          expect(blueprint.connection).to receive(:get).with(url)
+          blueprint.history_list('blueprint_name')
+        end
+
+        it 'display record list' do
+          expect(blueprint).to receive(:output).with(mock_response)
+          blueprint.history_list('blueprint_name')
+        end
+      end
+
+      describe '#history-show' do
+        let(:url) { "/blueprints/#{mock_blueprint_history[:blueprint_id]}/histories/#{mock_blueprint_history[:version]}" }
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump(mock_blueprint_history)) }
+        before do
+          allow(blueprint.connection).to receive(:get).with(url).and_return(mock_response)
+          allow(blueprint).to receive_message_chain(:outputter, :display_detail)
+          allow(blueprint).to receive_message_chain(:outputter, :display_list)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:version]
+          expect(commands['history_show'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request GET /blueprints/:id/histories/:version' do
+          blueprint.options = { version: mock_blueprint_history[:version], format: 'table' }
+          expect(blueprint.connection).to receive(:get).with(url)
+          blueprint.history_show('blueprint_name')
+        end
+
+        it 'display record details' do
+          blueprint.options = { version: mock_blueprint_history[:version], format: 'table' }
+          expect(blueprint.outputter).to receive(:display_detail).with(mock_blueprint_history.except(:pattern_snapshots).stringify_keys)
+          pattern_snapshots = mock_blueprint_history[:pattern_snapshots]
+          expect(blueprint.outputter).to receive(:display_list).with(pattern_snapshots)
+          blueprint.history_show('blueprint_name')
+        end
+      end
+
+      describe '#history-delete' do
+        let(:url) { "/blueprints/#{mock_blueprint_history[:blueprint_id]}/histories/#{mock_blueprint_history[:version]}" }
+        let(:mock_response) { double(status: 204, headers: [], body: JSON.dump('')) }
+        before do
+          allow(blueprint.connection).to receive(:delete).with(url).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:version]
+          expect(commands['history_delete'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request DELETE /blueprints/:id/histories/:version' do
+          blueprint.options = { version: mock_blueprint_history[:version] }
+          expect(blueprint.connection).to receive(:delete).with(url)
+          blueprint.history_delete('blueprint_name')
+        end
+
+        it 'display message' do
+          blueprint.options = { version: mock_blueprint_history[:version] }
+          expect(blueprint).to receive(:message)
+          blueprint.history_delete('blueprint_name')
+        end
+      end
     end
   end
 end
