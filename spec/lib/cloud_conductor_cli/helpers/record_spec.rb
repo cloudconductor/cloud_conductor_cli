@@ -109,16 +109,16 @@ module CloudConductorCli
 
         before do
           allow(record).to receive(:find_id_by).with(:blueprint, :name, 'blueprint_name').and_return(1)
-          allow(record.connection).to receive(:get).with('/blueprints/1/parameters').and_return(mock_response)
+          allow(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters').and_return(mock_response)
         end
 
-        it 'request GET /blueprint/:id/parameters' do
-          expect(record.connection).to receive(:get).with('/blueprints/1/parameters')
-          record.template_parameters('blueprint_name')
+        it 'request GET /blueprint/:id/histories/:version/parameters' do
+          expect(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters')
+          record.template_parameters('blueprint_name', 1)
         end
 
         it 'returns template parameters' do
-          result = record.template_parameters('blueprint_name')
+          result = record.template_parameters('blueprint_name', 1)
           expect(result).to match(JSON.parse(mock_response_body))
         end
       end
@@ -144,6 +144,7 @@ module CloudConductorCli
           {
             name: 'environment_name',
             blueprint: 'blueprint_name',
+            version: 1,
             parameter_file: '/path/to/parameter_file',
             user_attribute_file: '/path/to/user_attribute_file'
           }.stringify_keys
@@ -186,7 +187,7 @@ module CloudConductorCli
         context 'without parameter_file' do
           context 'with options[:blueprint]' do
             it 'call input_template_parameters' do
-              expect(record).to receive(:input_template_parameters).with(options['blueprint'])
+              expect(record).to receive(:input_template_parameters).with(options['blueprint'], 1)
               record.build_template_parameters(nil, options.except('parameter_file'))
             end
 
@@ -198,14 +199,16 @@ module CloudConductorCli
 
           context 'without options[:blueprint]' do
             let(:new_options) { options.except('parameter_file', 'blueprint') }
-            let(:mock_environment) { { id: 1, blueprint_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
+            let(:mock_environment) { { id: 1, blueprint_history_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
+            let(:mock_blueprint_history) { { id: 1, version: 1, blueprint_id: 1 }.stringify_keys }
             before do
               allow(record).to receive(:find_id_by).with(:environment, :name, 'environment_name').and_return(1)
               allow(record).to receive(:find_by).with(:environment, id: 1).and_return(mock_environment)
+              allow(record).to receive(:find_by).with(:history, id: 1, parent_model: :blueprint).and_return(mock_blueprint_history)
             end
 
             it 'call input_template_parameters' do
-              expect(record).to receive(:input_template_parameters).with(1)
+              expect(record).to receive(:input_template_parameters).with(1, 1)
               record.build_template_parameters('environment_name', new_options)
             end
 

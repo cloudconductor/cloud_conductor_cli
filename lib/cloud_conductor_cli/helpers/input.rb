@@ -4,8 +4,8 @@ require 'json'
 module CloudConductorCli
   module Helpers
     module Input
-      def input_template_parameters(blueprint_name)
-        parameters = template_parameters(blueprint_name)
+      def input_template_parameters(blueprint_name, version)
+        parameters = template_parameters(blueprint_name, version)
         read_user_inputs(parameters)
       end
 

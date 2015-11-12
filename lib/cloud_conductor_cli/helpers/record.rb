@@ -46,14 +46,14 @@ module CloudConductorCli
         end
       end
 
-      def template_parameters(blueprint_name)
+      def template_parameters(blueprint_name, version)
         blueprint_id = find_id_by(:blueprint, :name, blueprint_name)
-        response = connection.get("/blueprints/#{blueprint_id}/parameters")
+        response = connection.get("/blueprints/#{blueprint_id}/histories/#{version}/parameters")
         JSON.parse(response.body)
       end
 
-      def default_parameters(blueprint_name)
-        defaults = template_parameters(blueprint_name)
+      def default_parameters(blueprint_name, version)
+        defaults = template_parameters(blueprint_name, version)
         defaults.each do |_, parameters|
           parameters.each do |key, value|
             parameters[key] = value['Default']
@@ -64,17 +64,20 @@ module CloudConductorCli
       def build_template_parameters(environment, options)
         if options['blueprint']
           blueprint_name = options['blueprint']
+          version = options['version']
         elsif environment
           environment_id = find_id_by(:environment, :name, environment)
           environment = find_by(:environment, id: environment_id)
-          blueprint_name = environment ? environment['blueprint_id'] : nil
+          blueprint_history = find_by(:history, id: environment['blueprint_history_id'], parent_model: :blueprint)
+          blueprint_name = blueprint_history ? blueprint_history['blueprint_id'] : nil
+          version = blueprint_history ? blueprint_history['version'] : nil
         end
 
         if options['parameter_file']
-          defaults = default_parameters(blueprint_name)
+          defaults = default_parameters(blueprint_name, version)
           input_parameters = defaults.deep_merge(JSON.parse(File.read(options['parameter_file'])))
         else
-          input_parameters = blueprint_name ? input_template_parameters(blueprint_name) : {}
+          input_parameters = blueprint_name ? input_template_parameters(blueprint_name, version) : {}
         end
         JSON.dump(input_parameters || {})
       end
