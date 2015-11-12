@@ -109,7 +109,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:blueprint, :clouds, :description, :name, :parameter_file, :system, :user_attribute_file]
+          allowed_options = [:blueprint, :version, :clouds, :description, :name, :parameter_file, :system, :user_attribute_file]
           expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 

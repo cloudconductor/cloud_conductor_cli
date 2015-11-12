@@ -21,6 +21,7 @@ module CloudConductorCli
       desc 'create', 'Create environment from blueprint'
       method_option :system, type: :string, required: true, desc: 'System name or id'
       method_option :blueprint, type: :string, required: true, desc: 'Blueprint name or id'
+      method_option :version, type: :numeric, required: true, desc: 'Blueprint version'
       method_option :name, type: :string, required: true, desc: 'Environment name'
       method_option :description, type: :string, desc: 'Environment description'
       method_option :clouds, type: :array, required: true, desc: 'Cloud names to build system. ordered by priority desc.'
