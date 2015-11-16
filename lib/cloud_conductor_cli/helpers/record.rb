@@ -13,18 +13,31 @@ module CloudConductorCli
         options.select { |key, _value| declared_options.include?(key.to_sym) }
       end
 
-      def list_records(model, parent_model: nil, parent_id: nil)
+      def list_records(model, **params)
+        if params.is_a?(Hash) && params.key?(:parent_model)
+          parent_model = params.delete(:parent_model)
+          parent_id = params.delete(:parent_id)
+        end
+
+        if params.is_a?(Hash) && params.key?(:parent)
+          parent = params.delete(:parent)
+          parent_model = parent[:model]
+          parent_id = parent[:id]
+        end
+
+        payload = params || {}
+
         if parent_model
           request_path = "/#{parent_model.to_s.pluralize}/#{parent_id}/#{model.to_s.pluralize}"
         else
           request_path = "/#{model.to_s.pluralize}"
         end
-        response = connection.get(request_path)
+        response = connection.get(request_path, payload)
         JSON.parse(response.body)
       end
 
-      def where(model, conditions, parent_model: nil, parent_id: nil)
-        records = list_records(model, parent_model: parent_model, parent_id: parent_id)
+      def where(model, conditions, **params)
+        records = list_records(model, **params)
         records.select do |record|
           conditions.all? do |key, value|
             record[key.to_s] == value
@@ -32,13 +45,26 @@ module CloudConductorCli
         end
       end
 
-      def find_by(model, conditions, parent_model: nil, parent_id: nil)
-        where(model, conditions, parent_model: parent_model, parent_id: parent_id).first
+      def find_by(model, conditions, **params)
+        records = where(model, conditions, **params)
+        error_exit("#{model.to_s.capitalize} '#{conditions}' have found many. specify the conditions to narrow or the id.") if records.length > 1
+        records.first
       end
 
-      def find_id_by(model, key, value, parent_model: nil, parent_id: nil)
-        record = find_by(model, Hash[key, value], parent_model: parent_model, parent_id: parent_id)
-        record ||= find_by(model, id: value.to_i, parent_model: parent_model, parent_id: parent_id)
+      #
+      # Function:: Name:: find_id_by
+      # Params::
+      #   :model  -
+      #   :key    -
+      #   :value  -
+      #   :params - (Hash)
+      #             :parent_model -
+      #             :parent_id    -
+      #             :project_id   -
+      #             :role_id      -
+      def find_id_by(model, key, value, **params)
+        record = find_by(model, Hash[key, value], **params)
+        record ||= find_by(model, { id: value.to_i }, **params)
         if record
           record['id']
         else

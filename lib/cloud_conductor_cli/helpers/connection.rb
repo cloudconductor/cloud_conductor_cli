@@ -37,8 +37,8 @@ module CloudConductorCli
         @auth_token = get_auth_token(auth_id, auth_password)
       end
 
-      def get(path)
-        request(:get, path)
+      def get(path, payload = {})
+        request(:get, path, payload)
       end
 
       def post(path, payload = {})
