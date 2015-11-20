@@ -17,6 +17,22 @@ module CloudConductorCli
                                       desc: 'Output format(table / json). use table format if not specified.'
         end
       end
+
+      def initialize(args = [], options = {}, config = {})
+        if config.key?(:current_command)
+          current_command = config[:current_command]
+
+          if options.empty?
+            env_options = {}
+            self.class.commands[current_command.name].options.keys.each do |key|
+              env_options[key] = ENV["CC_#{key.to_s.upcase}"] if ENV["CC_#{key.to_s.upcase}"]
+            end
+            options = env_options unless env_options.empty?
+          end
+        end
+
+        super(args, options, config)
+      end
     end
   end
 end

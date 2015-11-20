@@ -6,14 +6,24 @@ module CloudConductorCli
       include Models::Base
 
       desc 'list', 'List base_images'
+      method_option :cloud, type: :string, desc: 'Cloud name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def list
-        response = connection.get('/base_images')
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        cloud_id = find_id_by(:cloud, :name, options[:cloud], project_id: project_id) if options[:cloud]
+        payload = declared(options, self.class, :list).except('cloud', 'project')
+                  .merge('cloud_id' => cloud_id, 'project_id' => project_id)
+        response = connection.get('/base_images', payload)
         output(response)
       end
 
       desc 'show BASE_IMAGE', 'Show base_image details'
+      method_option :cloud, type: :string, desc: 'Cloud name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def show(base_image)
-        id = find_id_by(:base_image, :source_image, base_image)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        cloud_id = find_id_by(:cloud, :name, options[:cloud], project_id: project_id) if options[:cloud]
+        id = find_id_by(:base_image, :source_image, base_image, cloud_id: cloud_id, project_id: project_id)
         response = connection.get("/base_images/#{id}")
         output(response)
       end
@@ -23,9 +33,13 @@ module CloudConductorCli
       method_option :source_image, type: :string, required: true, desc: 'Base image id'
       method_option :ssh_username, type: :string, desc: 'SSH login username', default: 'ec2-user'
       # method_option :os, type: :string, desc: 'OS name', default: 'CentOS-6.5'
+      method_option :project, type: :string, desc: 'Project name or id'
       def create
-        cloud_id = find_id_by(:cloud, :name, options[:cloud])
-        payload = declared(options, self.class, :create).except('cloud').merge('cloud_id' => cloud_id, 'os' => 'CentOS-6.5')
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        cloud_id = find_id_by(:cloud, :name, options[:cloud], project_id: project_id)
+        payload = declared(options, self.class, :create)
+                  .except('cloud', 'project')
+                  .merge('cloud_id' => cloud_id, 'os' => 'CentOS-6.5')
         response = connection.post('/base_images', payload)
 
         message('Create completed successfully.')
@@ -35,9 +49,13 @@ module CloudConductorCli
       desc 'update BASE_IMAGE', 'Update base_image information'
       method_option :source_image, type: :string, required: true, desc: 'Base image id'
       method_option :ssh_username, type: :string, desc: 'SSH login username', default: 'ec2-user'
+      method_option :cloud, type: :string, desc: 'Cloud name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def update(base_image)
-        id = find_id_by(:base_image, :source_image, base_image)
-        payload = declared(options, self.class, :update)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        cloud_id = find_id_by(:cloud, :name, options[:cloud], project_id: project_id) if options[:cloud]
+        id = find_id_by(:base_image, :source_image, base_image, cloud_id: cloud_id, project_id: project_id)
+        payload = declared(options, self.class, :update).except('cloud', 'project')
         response = connection.put("/base_images/#{id}", payload)
 
         message('Update completed successfully.')
@@ -45,8 +63,12 @@ module CloudConductorCli
       end
 
       desc 'delete BASE_IMAGE', 'Delete base_image'
+      method_option :cloud, type: :string, desc: 'Cloud name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def delete(base_image)
-        id = find_id_by(:base_image, :source_image, base_image)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        cloud_id = find_id_by(:cloud, :name, options[:cloud], project_id: project_id) if options[:cloud]
+        id = find_id_by(:base_image, :source_image, base_image, cloud_id: cloud_id, project_id: project_id)
         connection.delete("/base_images/#{id}")
 
         message('Delete completed successfully.')

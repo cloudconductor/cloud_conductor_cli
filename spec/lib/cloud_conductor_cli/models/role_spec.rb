@@ -18,8 +18,7 @@ module CloudConductorCli
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
         allow(role).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
-        allow(role).to receive(:find_id_by).with(:role, :name, anything).and_return(mock_role[:id])
-        allow(role).to receive(:find_id_by).with(:role, :name, anything, project_id: 1).and_return(mock_role[:id])
+        allow(role).to receive(:find_id_by).with(:role, :name, anything, anything).and_return(mock_role[:id])
         allow(role).to receive(:output)
         allow(role).to receive(:message)
       end
@@ -36,13 +35,23 @@ module CloudConductorCli
         end
 
         it 'request GET /roles' do
-          expect(role.connection).to receive(:get).with('/roles', {})
+          expect(role.connection).to receive(:get).with('/roles', 'project_id' => nil)
           role.list
         end
 
         it 'display record list' do
           expect(role).to receive(:output).with(mock_response)
           role.list
+        end
+
+        context 'with project' do
+          it 'request GET /roles' do
+            role.options = { project: 'project_name' }.with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role.connection).to receive(:get).with('/roles', 'project_id' => 1)
+            role.list
+          end
         end
       end
 
@@ -75,6 +84,18 @@ module CloudConductorCli
           expect(role).to receive(:output).with(mock_response_permissions)
           role.show('role_name')
         end
+
+        context 'with project' do
+          it 'request GET /roles/:id' do
+            role.options = { project: 'project_name' }.with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1)
+
+            expect(role.connection).to receive(:get).with("/roles/#{mock_role[:id]}/permissions")
+            role.show('role_name')
+          end
+        end
       end
 
       describe '#create' do
@@ -89,7 +110,9 @@ module CloudConductorCli
         end
 
         it 'request POST /roles' do
-          role.options = mock_role.except(:id, :project_id).merge(project: 'project_name').with_indifferent_access
+          role.options = mock_role.except(:id, :project_id)
+            .merge(project: 'project_name')
+            .with_indifferent_access
           payload = role.options.except(:project).merge(project_id: 1)
           expect(role.connection).to receive(:post).with('/roles', payload)
           role.create
@@ -125,6 +148,21 @@ module CloudConductorCli
           expect(role).to receive(:output).with(mock_response)
           role.update('role_name')
         end
+
+        context 'with project' do
+          it 'request PUT /roles/:id' do
+            role.options = mock_role.except(:id, :project_id)
+              .merge(project: 'project_name')
+              .with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1)
+
+            payload = role.options.except(:project)
+            expect(role.connection).to receive(:put).with("/roles/#{mock_role[:id]}", payload)
+            role.update('role_name')
+          end
+        end
       end
 
       describe '#delete' do
@@ -146,6 +184,18 @@ module CloudConductorCli
         it 'display message' do
           expect(role).to receive(:message)
           role.delete('role_name')
+        end
+
+        context 'with project' do
+          it 'request DELETE /roles/:id' do
+            role.options = { project: 'project_name' }.with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1)
+
+            expect(role.connection).to receive(:delete).with("/roles/#{mock_role[:id]}")
+            role.delete('role_name')
+          end
         end
       end
 
@@ -173,6 +223,19 @@ module CloudConductorCli
         it 'display message' do
           expect(role).to receive(:output).with(mock_response)
           role.add_permission('role_name')
+        end
+
+        context 'with project' do
+          it 'request POST /roles/:id/permission' do
+            role.options = { model: 'test', action: 'manage', project: 'project_name' }.with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1)
+
+            payload = role.options.except(:project)
+            expect(role.connection).to receive(:post).with("/roles/#{mock_role[:id]}/permissions", payload)
+            role.add_permission('role_name')
+          end
         end
       end
 
@@ -212,6 +275,18 @@ module CloudConductorCli
           }
           expect(role).to receive(:message)
           role.remove_permission('role_name')
+        end
+
+        context 'with project' do
+          it 'request DELETE /roles/:id/permission/:id' do
+            role.options = { model: 'test', action: 'manage', project: 'project_name' }.with_indifferent_access
+
+            expect(role).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(role).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1)
+
+            expect(role.connection).to receive(:delete).with("/roles/#{mock_role[:id]}/permissions/1")
+            role.remove_permission('role_name')
+          end
         end
       end
     end

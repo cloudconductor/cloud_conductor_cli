@@ -6,15 +6,24 @@ module CloudConductorCli
       include Models::Base
 
       desc 'list', 'List applications'
+      method_option :system, type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def list
-        response = connection.get('/applications')
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        payload = { 'system_id' => system_id, 'project_id' => project_id }
+        response = connection.get('/applications', payload)
         output(response)
       end
 
       desc 'show APPLICATION', 'Show application details'
       method_option :version, type: :string, desc: 'Application version'
+      method_option :system, type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def show(application)
-        id = find_id_by(:application, :name, application)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        id = find_id_by(:application, :name, application, system_id: system_id, project_id: project_id)
         response = connection.get("/applications/#{id}")
         output(response)
         if options[:version]
@@ -32,9 +41,11 @@ module CloudConductorCli
       method_option :name, type: :string, required: true, desc: 'Application name'
       method_option :description, type: :string, desc: 'Application description'
       method_option :domain, type: :string, desc: 'Application domain'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def create
-        system_id = find_id_by(:system, :name, options['system'])
-        payload = declared(options, self.class, :create).except('system').merge('system_id' => system_id)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id)
+        payload = declared(options, self.class, :create).except('system', 'project').merge('system_id' => system_id)
         response = connection.post('/applications', payload)
 
         message('Create complete successfully.')
@@ -45,9 +56,13 @@ module CloudConductorCli
       method_option :name,        type: :string, desc: 'Application name'
       method_option :description, type: :string, desc: 'Application description'
       method_option :domain,      type: :string, desc: 'Application domain'
+      method_option :system,      type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def update(application)
-        id = find_id_by(:application, :name, application)
-        payload = declared(options, self.class, :update)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        id = find_id_by(:application, :name, application, system_id: system_id, project_id: project_id)
+        payload = declared(options, self.class, :update).except('system', 'project')
         response = connection.put("/applications/#{id}", payload)
 
         message('Update completed successfully.')
@@ -55,8 +70,12 @@ module CloudConductorCli
       end
 
       desc 'delete APPLICATION', 'Delete application'
+      method_option :system, type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def delete(application)
-        id = find_id_by(:application, :name, application)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        id = find_id_by(:application, :name, application, system_id: system_id, project_id: project_id)
         connection.delete("/applications/#{id}")
 
         message('Delete completed successfully.')
@@ -70,9 +89,13 @@ module CloudConductorCli
       method_option :pre_deploy, type: :string, desc: 'Pre deploy script'
       method_option :post_deploy, type: :string, desc: 'Post deploy script'
       method_option :parameters, type: :string, desc: 'Application parameters'
+      method_option :system, type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def release(application)
-        application_id = find_id_by(:application, :name, application)
-        payload = declared(options, self.class, :release)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        application_id = find_id_by(:application, :name, application, system_id: system_id, project_id: project_id)
+        payload = declared(options, self.class, :release).except('system')
         response = connection.post("/applications/#{application_id}/histories", payload)
 
         message('Create complete successfully.')
@@ -90,9 +113,13 @@ module CloudConductorCli
       desc 'deploy APPLICATION', 'Deploy application to specified environment'
       method_option :version, type: :string, desc: 'Application version (use latest version if unspecified)'
       method_option :environment, type: :string, required: true, desc: 'Target environment name or id'
+      method_option :system, type: :string, desc: 'Target system name or id'
+      method_option :project, type: :string, desc: 'Target project name or id'
       def deploy(application)
-        application_id = find_id_by(:application, :name, application)
-        environment_id = find_id_by(:environment, :name, options['environment'])
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options['system'], project_id: project_id) if options['system']
+        application_id = find_id_by(:application, :name, application, system_id: system_id, project_id: project_id)
+        environment_id = find_id_by(:environment, :name, options['environment'], system_id: system_id, project_id: project_id)
         payload = { 'environment_id' => environment_id }
         if options['version']
           application_history_id = find_id_by(:history, :version, options['version'], parent_model: :application, parent_id: application_id)

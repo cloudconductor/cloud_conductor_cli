@@ -18,7 +18,7 @@ module CloudConductorCli
 
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
-        allow(system).to receive(:find_id_by).with(:system, :name, anything).and_return(mock_system[:id])
+        allow(system).to receive(:find_id_by).with(:system, :name, anything, anything).and_return(mock_system[:id])
         allow(system).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(system).to receive(:find_id_by).with(:environment, :name, anything).and_return(1)
         allow(system).to receive(:output)
@@ -28,22 +28,31 @@ module CloudConductorCli
       describe '#list' do
         let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_system])) }
         before do
-          allow(system.connection).to receive(:get).with('/systems').and_return(mock_response)
+          allow(system.connection).to receive(:get).with('/systems', anything).and_return(mock_response)
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['list'].options.keys).to match_array(allowed_options)
         end
 
         it 'request GET /systems' do
-          expect(system.connection).to receive(:get).with('/systems')
+          expect(system.connection).to receive(:get).with('/systems', 'project_id' => nil)
           system.list
         end
 
         it 'display record list' do
           expect(system).to receive(:output).with(mock_response)
           system.list
+        end
+
+        describe 'with project' do
+          it 'request GET /systems' do
+            system.options = { project: 'project_name' }.with_indifferent_access
+            expect(system).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(system.connection).to receive(:get).with('/systems', 'project_id' => 1)
+            system.list
+          end
         end
       end
 
@@ -54,7 +63,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['show'].options.keys).to match_array(allowed_options)
         end
 
@@ -66,6 +75,17 @@ module CloudConductorCli
         it 'display record details' do
           expect(system).to receive(:output).with(mock_response)
           system.show('system_name')
+        end
+
+        describe 'with project' do
+          it 'request GET /systems/:id' do
+            system.options = { project: 'project_name' }.with_indifferent_access
+            expect(system).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(system).to receive(:find_id_by).with(:system, :name, 'system_name', project_id: 1)
+
+            expect(system.connection).to receive(:get).with("/systems/#{mock_system[:id]}")
+            system.show('system_name')
+          end
         end
       end
 
@@ -101,7 +121,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:name, :description, :domain]
+          allowed_options = [:name, :description, :domain, :project]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
@@ -117,6 +137,20 @@ module CloudConductorCli
           expect(system).to receive(:output).with(mock_response)
           system.update('system_name')
         end
+
+        describe 'with project' do
+          it 'request PUT /systems/:id with payload' do
+            system.options = mock_system.except(:id, :project_id, :primary_environment_id)
+              .merge(project: 'project_name').with_indifferent_access
+
+            expect(system).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(system).to receive(:find_id_by).with(:system, :name, 'system_name', project_id: 1)
+
+            payload = system.options.except(:project)
+            expect(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}", payload)
+            system.update('system_name')
+          end
+        end
       end
 
       describe '#delete' do
@@ -126,7 +160,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['delete'].options.keys).to match_array(allowed_options)
         end
 
@@ -139,6 +173,17 @@ module CloudConductorCli
           expect(system).to receive(:message)
           system.delete('system_name')
         end
+
+        describe 'with project' do
+          it 'request DELETE /systems/:id' do
+            system.options = { project: 'project_name' }.with_indifferent_access
+            expect(system).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(system).to receive(:find_id_by).with(:system, :name, 'system_name', project_id: 1)
+
+            expect(system.connection).to receive(:delete).with("/systems/#{mock_system[:id]}")
+            system.delete('system_name')
+          end
+        end
       end
 
       describe '#switch' do
@@ -148,7 +193,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:environment]
+          allowed_options = [:environment, :project]
           expect(commands['switch'].options.keys).to match_array(allowed_options)
         end
 
@@ -164,6 +209,19 @@ module CloudConductorCli
           expect(system).to receive(:message)
           expect(system).to receive(:output).with(mock_response)
           system.switch('system_name')
+        end
+
+        describe 'with project' do
+          it 'request PUT /systems/:id/switch with payload' do
+            system.options = { environment: 'environment_name', project: 'project_name' }.with_indifferent_access
+            expect(system).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(system).to receive(:find_id_by).with(:system, :name, 'system_name', project_id: 1)
+            expect(system).to receive(:find_id_by).with(:environment, :name, 'environment_name')
+
+            payload = { 'environment_id' => 1 }
+            expect(system.connection).to receive(:put).with("/systems/#{mock_system[:id]}/switch", payload)
+            system.switch('system_name')
+          end
         end
       end
     end

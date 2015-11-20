@@ -6,14 +6,20 @@ module CloudConductorCli
       include Models::Base
 
       desc 'list', 'List patterns'
+      method_option :project, type: :string, desc: 'Project name or id'
       def list
-        response = connection.get('/patterns')
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        payload = declared(options, self.class, :list).except('project')
+                  .merge('project_id' => project_id)
+        response = connection.get('/patterns', payload)
         output(response)
       end
 
       desc 'show PATTERN', 'Show pattern details'
+      method_option :project, type: :string, desc: 'Project name or id'
       def show(pattern)
-        id = find_id_by(:pattern, :name, pattern)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:pattern, :name, pattern, project_id: project_id)
         response = connection.get("/patterns/#{id}")
         output(response)
       end
@@ -34,9 +40,11 @@ module CloudConductorCli
       desc 'update PATTERN', 'Update pattern information'
       method_option :url, type: :string, desc: 'Pattern URL'
       method_option :revision, type: :string, desc: 'Repository revision'
+      method_option :project, type: :string, desc: 'Project name or id'
       def update(pattern)
-        id = find_id_by(:pattern, :name, pattern)
-        payload = declared(options, self.class, :update)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:pattern, :name, pattern, project_id: project_id)
+        payload = declared(options, self.class, :update).except('project')
         response = connection.put("/patterns/#{id}", payload)
 
         message('Update completed successfully.')
@@ -44,8 +52,10 @@ module CloudConductorCli
       end
 
       desc 'delete PATTERN', 'Delete pattern'
+      method_option :project, type: :string, desc: 'Project name or id'
       def delete(pattern)
-        id = find_id_by(:pattern, :name, pattern)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:pattern, :name, pattern, project_id: project_id)
         connection.delete("/patterns/#{id}")
 
         message('Delete completed successfully.')
