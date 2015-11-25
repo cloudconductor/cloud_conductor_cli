@@ -167,36 +167,30 @@ module CloudConductorCli
         let(:mock_response) { double(status: 201, headers: [], body: JSON.dump('')) }
         before do
           allow(project).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
-          allow(project).to receive(:find_id_by).with(:role, :name, anything, project_id: 1).and_return(1)
-          allow(project.connection).to receive(:post).with('/accounts', anything).and_return(mock_response)
+          allow(project).to receive(:find_id_by).with(:account, :email, anything).and_return(1)
+          allow(project.connection).to receive(:post).with('/assignments', anything).and_return(mock_response)
         end
 
         it 'allow valid options' do
-          allowed_options = [:email, :name, :password, :role]
+          allowed_options = [:account]
           expect(commands['add_account'].options.keys).to match_array(allowed_options)
         end
 
         it 'request POST /accounts' do
           project.options = {
-            email: 'test_name@example.com',
-            role: 'test_role'
+            account: 'test_name@example.com'
           }.with_indifferent_access
           payload = {
-            'email' => 'test_name@example.com',
             'project_id' => 1,
-            'role_id' => 1,
-            'name' => 'test_name',
-            'password' => 'test_name',
-            'password_confirmation' => 'test_name'
+            'account_id' => 1
           }
-          expect(project.connection).to receive(:post).with('/accounts', payload)
+          expect(project.connection).to receive(:post).with('/assignments', payload)
           project.add_account('project_name')
         end
 
         it 'display message' do
           project.options = {
-            email: 'test_name@example.com',
-            role: 'test_role'
+            account: 'test_name@example.com'
           }.with_indifferent_access
           expect(project).to receive(:output).with(mock_response)
           project.add_account('project_name')

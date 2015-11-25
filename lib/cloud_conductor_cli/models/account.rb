@@ -44,21 +44,11 @@ module CloudConductorCli
       method_option :name, type: :string, required: true, desc: 'Account user name'
       method_option :password, type: :string, required: true, desc: 'Account password'
       method_option :admin, type: :boolean, desc: 'Admin or not', default: false
-      method_option :project, type: :string, desc: 'Project name or id'
-      method_option :role, type: :string, desc: 'Role name or id'
       def create
         payload = declared(options, self.class, :create)
                   .except('project', 'role')
                   .merge('password_confirmation' => options['password'],
                          'admin' => options['admin'] ? 1 : 0)
-        if options['project']
-          project_id = find_id_by(:project, :name, options[:project])
-          payload = payload.merge('project_id' => project_id)
-          if options['role']
-            role_id = find_id_by(:role, :name, options[:role], project_id: project_id)
-            payload = payload.merge('role_id' => role_id)
-          end
-        end
         response = connection.post('/accounts', payload)
 
         message('Create completed successfully.')

@@ -100,11 +100,12 @@ module CloudConductorCli
           project_id = find_id_by(:project, :name, options[:project])
           id = find_id_by(:role, :name, role, project_id: project_id)
         end
-        actions = options[:action].split(',')
+
         records = where(:permission, { model: options[:model] }, parent_model: :role, parent_id: id)
         records = records.select do |record|
-          actions.include?(record['action'])
+          record['action'] == options[:action]
         end if records
+        error_exit("permission {:model => '#{options[:model]}', :action => '#{options[:action]}'} does not exist.") if records.length == 0
         records.each do |record|
           connection.delete("/roles/#{id}/permissions/#{record['id']}")
         end
