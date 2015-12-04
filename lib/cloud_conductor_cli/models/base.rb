@@ -22,12 +22,23 @@ module CloudConductorCli
         if config.key?(:current_command)
           current_command = config[:current_command]
 
-          if options.empty?
-            env_options = {}
-            self.class.commands[current_command.name].options.keys.each do |key|
-              env_options[key] = ENV["CC_#{key.to_s.upcase}"] if ENV["CC_#{key.to_s.upcase}"]
-            end
-            options = env_options unless env_options.empty?
+          env_options = {}
+          self.class.commands[current_command.name].options.keys.each do |key|
+            env_options[key] = ENV["CC_#{key.to_s.upcase}"] if ENV["CC_#{key.to_s.upcase}"]
+          end
+
+          if options.is_a?(Array)
+            array_options, hash_options = options, env_options
+
+            parse_options = self.class.class_options
+            command_options = config.delete(:command_options)
+            parse_options = parse_options.merge(command_options) if command_options
+
+            stop_on_unknown = self.class.stop_on_unknown_option? config[:current_command]
+            opts = Thor::Options.new(parse_options, hash_options, stop_on_unknown)
+            options = opts.parse(array_options)
+          else
+            options = env_options.merge(options)
           end
         end
 
