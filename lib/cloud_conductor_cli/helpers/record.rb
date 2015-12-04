@@ -27,6 +27,8 @@ module CloudConductorCli
 
         payload = params || {}
 
+        payload = payload.select { |_key, value| !value.nil? }
+
         if parent_model
           request_path = "/#{parent_model.to_s.pluralize}/#{parent_id}/#{model.to_s.pluralize}"
         else

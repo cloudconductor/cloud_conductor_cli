@@ -41,6 +41,17 @@ module CloudConductorCli
           expect(account).to receive(:output).with(mock_response)
           account.list
         end
+
+        context 'with project' do
+          it 'request GET /accounts' do
+            account.options = { project: 'project_name' }.with_indifferent_access
+
+            expect(account).to receive(:find_id_by).with(:project, :name, 'project_name').and_return(1)
+
+            expect(account.connection).to receive(:get).with('/accounts', 'project_id' => 1)
+            account.list
+          end
+        end
       end
 
       describe '#show' do
@@ -62,6 +73,37 @@ module CloudConductorCli
         it 'display record details' do
           expect(account).to receive(:output).with(mock_response)
           account.show('test@example.com')
+        end
+
+        context 'with project' do
+          let(:mock_response_role) { double(status: 200, headers: [], body: JSON.dump('')) }
+
+          before do
+            allow(account).to receive(:find_id_by).with(:project, :name, 'project_name').and_return(1)
+            allow(account).to receive(:find_id_by).with(:account, :email, 'test@example.com', project_id: 1).and_return(mock_account[:id])
+            allow(account.connection).to receive(:get).with("/accounts/#{mock_account[:id]}", project_id: 1).and_return(mock_response)
+            allow(account.connection).to receive(:get).with('/roles', project_id: 1, account_id: mock_account[:id]).and_return(mock_response_role)
+            account.options = { project: 'project_name' }.with_indifferent_access
+          end
+
+          it 'request GET /accounts/:id' do
+            expect(account).to receive(:find_id_by).with(:project, :name, 'project_name')
+
+            expect(account.connection).to receive(:get).with("/accounts/#{mock_account[:id]}", project_id: 1)
+            account.show('test@example.com')
+          end
+
+          it 'request GET /roles/' do
+            expect(account.connection).to receive(:get).with('/roles', project_id: 1, account_id: mock_account[:id])
+            account.show('test@example.com')
+          end
+
+          it 'display record details' do
+            expect(account).to receive(:output).with(mock_response)
+            expect(account).to receive(:message)
+            expect(account).to receive(:output).with(mock_response_role)
+            account.show('test@example.com')
+          end
         end
       end
 

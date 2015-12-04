@@ -8,11 +8,9 @@ module CloudConductorCli
       desc 'list', 'List roles'
       method_option :project, type: :string, desc: 'Project name or id'
       def list
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
         payload = declared(options, self.class, :list).except('project')
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          payload = payload.merge('project_id' => project_id)
-        end
+                  .merge('project_id' => project_id)
         response = connection.get('/roles', payload)
         output(response)
       end
@@ -20,11 +18,8 @@ module CloudConductorCli
       desc 'show ROLE', 'Show role details'
       method_option :project, type: :string, desc: 'Project name or id'
       def show(role)
-        id = find_id_by(:role, :name, role)
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          id = find_id_by(:role, :name, role, project_id: project_id)
-        end
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:role, :name, role, project_id: project_id)
         response = connection.get("/roles/#{id}")
         output(response)
 
@@ -46,15 +41,12 @@ module CloudConductorCli
       end
 
       desc 'update ROLE', 'Update role'
-      method_option :project, type: :string, desc: 'Project name or id'
       method_option :name, type: :string, desc: 'Role name'
       method_option :description, type: :string, desc: 'Role description'
+      method_option :project, type: :string, desc: 'Project name or id'
       def update(role)
-        id = find_id_by(:role, :name, role)
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          id = find_id_by(:role, :name, role, project_id: project_id)
-        end
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:role, :name, role, project_id: project_id)
 
         payload = declared(options, self.class, :update).except(:project)
         response = connection.put("/roles/#{id}", payload)
@@ -65,42 +57,32 @@ module CloudConductorCli
       desc 'delete ROLE', 'Delete role'
       method_option :project, type: :string, desc: 'Project name or id'
       def delete(role)
-        id = find_id_by(:role, :name, role)
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          id = find_id_by(:role, :name, role, project_id: project_id)
-        end
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:role, :name, role, project_id: project_id)
         connection.delete("/roles/#{id}")
         message('Delete completed successfully.')
       end
 
       desc 'add-permission ROLE', 'Add permission'
-      method_option :project, type: :string, desc: 'Project name or id'
       method_option :model, type: :string, required: true, desc: 'model name'
       method_option :action, type: :string, required: true, desc: 'action(manage, read, create, update, destroy) '
+      method_option :project, type: :string, desc: 'Project name or id'
       def add_permission(role)
-        id = find_id_by(:role, :name, role)
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          id = find_id_by(:role, :name, role, project_id: project_id)
-        end
-        payload = declared(options, self.class, :add_permission)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:role, :name, role, project_id: project_id)
+        payload = declared(options, self.class, :add_permission).except(:project)
         response = connection.post("/roles/#{id}/permissions", payload)
         message('Update completed successfully.')
         output(response)
       end
 
       desc 'remove-permission ROLE', 'Remove permission'
-      method_option :project, type: :string, desc: 'Project name or id'
       method_option :model, type: :string, required: true, desc: 'model name'
       method_option :action, type: :string, required: true, desc: 'action (manage, read, create, update, destroy) '
+      method_option :project, type: :string, desc: 'Project name or id'
       def remove_permission(role)
-        id = find_id_by(:role, :name, role)
-        if options[:project]
-          project_id = find_id_by(:project, :name, options[:project])
-          id = find_id_by(:role, :name, role, project_id: project_id)
-        end
-
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        id = find_id_by(:role, :name, role, project_id: project_id)
         records = where(:permission, { model: options[:model] }, parent_model: :role, parent_id: id)
         records = records.select do |record|
           record['action'] == options[:action]
