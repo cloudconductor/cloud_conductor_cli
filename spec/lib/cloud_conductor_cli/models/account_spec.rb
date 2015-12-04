@@ -130,28 +130,6 @@ module CloudConductorCli
           expect(account).to receive(:output).with(mock_response)
           account.create
         end
-
-        context 'with project-role' do
-          before do
-            allow(account).to receive(:find_id_by).with(:project, :name, 'project_name').and_return(1)
-            allow(account).to receive(:find_id_by).with(:role, :name, 'role_name', project_id: 1).and_return(1)
-            account.options = mock_account.except(:id)
-              .merge(admin: false,
-                     password: 'password',
-                     password_confirmation: 'password',
-                     project: 'project_name',
-                     role: 'role_name'
-                  ).with_indifferent_access
-          end
-
-          it 'request POST /accounts with payload' do
-            payload = account.options.except(:project, :role)
-                      .merge('admin' => 0, 'project_id' => 1, 'role_id' => 1)
-
-            expect(account.connection).to receive(:post).with('/accounts', payload)
-            account.create
-          end
-        end
       end
 
       describe '#update' do
