@@ -69,7 +69,7 @@ module CloudConductorCli
       end
 
       desc 'remove-account PROJECT', 'Remove account from project'
-      method_option :account, type: :string, desc: 'Account email or id'
+      method_option :account, type: :string, required: true, desc: 'Account email or id'
       def remove_account(project)
         project_id = find_id_by(:project, :name, project)
         account_id = find_id_by(:account, :email, options[:account], project_id: project_id)
