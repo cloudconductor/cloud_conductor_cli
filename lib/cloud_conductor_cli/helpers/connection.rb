@@ -55,6 +55,7 @@ module CloudConductorCli
 
       def request(method, path, payload = {})
         request_path = File.join(api_prefix, path)
+        payload = payload.select { |_key, value| !value.nil? }
         payload.merge!(auth_token: auth_token) if auth_token
         begin
           response = faraday.send(method, request_path, payload)
