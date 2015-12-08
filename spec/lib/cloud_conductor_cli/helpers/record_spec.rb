@@ -6,6 +6,7 @@ module CloudConductorCli
       let(:record) { Object.new.extend(Record) }
       let(:model) { :project }
       let(:mock_project) { { id: 1, name: 'project_name', description: 'project_description' } }
+      let(:get_params) { {} }
 
       before do
         allow(Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
@@ -25,11 +26,11 @@ module CloudConductorCli
       describe '#list_records' do
         before do
           mock_response = double(status: 200, headers: [], body: JSON.dump([mock_project]))
-          allow(record.connection).to receive(:get).with("/#{model.to_s.pluralize}").and_return(mock_response)
+          allow(record.connection).to receive(:get).with("/#{model.to_s.pluralize}", get_params).and_return(mock_response)
         end
 
         it 'request GET /:models' do
-          expect(record.connection).to receive(:get).with("/#{model.to_s.pluralize}")
+          expect(record.connection).to receive(:get).with("/#{model.to_s.pluralize}", get_params)
           record.list_records(model)
         end
 
@@ -78,7 +79,7 @@ module CloudConductorCli
         end
 
         it 'call find_by' do
-          expect(record).to receive(:find_by).with(model, { name: 'project_name' }, parent_model: nil, parent_id: nil)
+          expect(record).to receive(:find_by).with(model, { name: 'project_name' }, {})
           record.find_id_by(model, :name, 'project_name')
         end
 

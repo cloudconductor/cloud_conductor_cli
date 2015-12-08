@@ -2,18 +2,28 @@ require 'thor'
 
 module CloudConductorCli
   module Models
-    class Environment < Thor
+    class Environment < Thor # rubocop:disable Metrics/ClassLength
       include Models::Base
 
       desc 'list', 'List environments'
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def list
-        response = connection.get('/environments')
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        payload = declared(options, self.class, :create).except('system', 'project')
+                  .merge('system_id' => system_id, 'project_id' => project_id)
+        response = connection.get('/environments', payload)
         output(response)
       end
 
       desc 'show ENVIRONMENT', 'Show environment details'
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def show(environment)
-        id = find_id_by(:environment, :name, environment)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
         response = connection.get("/environments/#{id}")
         output(response)
       end
@@ -29,18 +39,20 @@ module CloudConductorCli
                                      desc: 'Load pattern parameters from json file',
                                      long_desc: 'If this option does not specified, open interactive shell to answer parameters.'
       method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
+      method_option :project, type: :string, desc: 'Project name or id'
       def create
-        system_id = find_id_by(:system, :name, options[:system])
-        blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id)
+        blueprint_id = find_id_by(:blueprint, :name, options[:blueprint], project_id: project_id)
         candidates_attributes = options['clouds'].map.with_index do |cloud, i|
-          { cloud_id: find_id_by(:cloud, :name, cloud),
+          { cloud_id: find_id_by(:cloud, :name, cloud, project_id: project_id),
             priority: (options['clouds'].size - i) * 10 }
         end
         candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
         template_parameters = build_template_parameters(nil, options)
         user_attributes = build_user_attributes(options)
         payload = declared(options, self.class, :create)
-                  .except('system', 'blueprint', 'clouds', 'parameter_file', 'user_attribute_file')
+                  .except('system', 'blueprint', 'clouds', 'parameter_file', 'user_attribute_file', 'project')
                   .merge('system_id' => system_id, 'blueprint_id' => blueprint_id,
                          'candidates_attributes' => candidates_attributes,
                          'template_parameters' => template_parameters,
@@ -58,34 +70,47 @@ module CloudConductorCli
                                      desc: 'Load pattern parameters from json file.',
                                      long_desc: 'If this option does not specified, open interactive shell to answer parameters.'
       method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
-      def update(environment)
-        id = find_id_by(:environment, :name, environment)
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
+      def update(environment) # rubocop:disable Metrics/AbcSize
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
+
         payload = declared(options, self.class, :update)
-                  .except('clouds', 'parameter_file', 'user_attribute_file')
+                  .except('clouds', 'parameter_file', 'user_attribute_file', 'system', 'project')
+
         if options['clouds']
           candidates_attributes = options['clouds'].map.with_index do |cloud, i|
-            { cloud_id: find_id_by(:cloud, :name, cloud),
+            { cloud_id: find_id_by(:cloud, :name, cloud, project_id: project_id),
               priority: (options['clouds'].size - i) * 10 }
           end
           candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
           payload.merge!('candidates_attributes' => candidates_attributes)
         end
+
         if options['parameter_file']
           template_parameters = build_template_parameters(environment, options)
           payload.merge!('template_parameters' => template_parameters)
         end
+
         if options['user_attribute_file']
           user_attributes = build_user_attributes(options)
           payload.merge!('user_attributes' => user_attributes)
         end
+
         response = connection.put("/environments/#{id}", payload)
         message('Update completed successfully.')
         output(response)
       end
 
       desc 'delete ENVIRONMENT', 'Delete environment'
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def delete(environment)
-        id = find_id_by(:environment, :name, environment)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
         connection.delete("/environments/#{id}")
         message('Delete completed successfully.')
       end
@@ -95,13 +120,17 @@ module CloudConductorCli
       method_option :name, type: :string, desc: 'Environment name'
       method_option :description, type: :string, desc: 'Environment description'
       method_option :switch, type: :boolean, desc: 'Switch system primary environment automatically', default: false
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def rebuild(environment)
-        payload = declared(options, self.class, :rebuild)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        payload = declared(options, self.class, :rebuild).except('system', 'project')
         if options[:blueprint]
-          blueprint_id = find_id_by(:blueprint, :name, options[:blueprint])
+          blueprint_id = find_id_by(:blueprint, :name, options[:blueprint], project_id: project_id)
           payload = payload.except(:blueprint).merge(blueprint_id: blueprint_id)
         end
-        id = find_id_by(:environment, :name, environment)
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
         response = connection.post("/environments/#{id}/rebuild", payload)
         message('Rebuild accepted. creating new environment.')
         output(response)
@@ -109,25 +138,37 @@ module CloudConductorCli
 
       desc 'send-event ENVIRONMENT', 'Send event to environment'
       method_option :event, type: :string, required: true, desc: 'Event name'
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def send_event(environment)
-        id = find_id_by(:environment, :name, environment)
-        payload = declared(options, self.class, :send_event)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
+        payload = declared(options, self.class, :send_event).except(:system, :project)
         response = connection.post("/environments/#{id}/events", payload)
         event_id = JSON.parse(response.body)['event_id']
         message("Event '#{options['event']}' accepted. event_id: #{event_id}")
       end
 
       desc 'list-event ENVIRONMENT', 'List events'
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
       def list_event(environment)
-        id = find_id_by(:environment, :name, environment)
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
         response = connection.get("/environments/#{id}/events")
         output(response)
       end
 
       desc 'show-event ENVIRONMENT', 'Show event details'
       method_option :event_id, type: :string, required: true, desc: 'Event id'
-      def show_event(environment)
-        id = find_id_by(:environment, :name, environment)
+      method_option :system, type: :string, desc: 'System name or id'
+      method_option :project, type: :string, desc: 'Project name or id'
+      def show_event(environment) # rubocop:disable Metrics/AbcSize
+        project_id = find_id_by(:project, :name, options[:project]) if options[:project]
+        system_id = find_id_by(:system, :name, options[:system], project_id: project_id) if options[:system]
+        id = find_id_by(:environment, :name, environment, system_id: system_id, project_id: project_id)
         response = connection.get("/environments/#{id}/events/#{options['event_id']}")
         case options[:format]
         when 'json' then

@@ -1,3 +1,4 @@
+require 'active_support'
 require 'active_support/core_ext'
 
 module CloudConductorCli
@@ -133,6 +134,94 @@ module CloudConductorCli
         it 'display message' do
           expect(project).to receive(:message)
           project.delete('project_name')
+        end
+      end
+
+      describe '#list-account' do
+        let(:mock_response) { double(status: 200, headers: [], body: JSON.dump('')) }
+        before do
+          allow(project.connection).to receive(:get).with('/accounts', anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = []
+          expect(commands['list_account'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request GET /accounts' do
+          project.options = {}
+          payload = {
+            'project_id' => 1
+          }
+          expect(project.connection).to receive(:get).with('/accounts', payload)
+          project.list_account('project_name')
+        end
+
+        it 'display message' do
+          expect(project).to receive(:output).with(mock_response)
+          project.list_account('project_name')
+        end
+      end
+
+      describe '#add-account' do
+        let(:mock_response) { double(status: 201, headers: [], body: JSON.dump('')) }
+        before do
+          allow(project).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+          allow(project).to receive(:find_id_by).with(:account, :email, anything).and_return(1)
+          allow(project.connection).to receive(:post).with('/assignments', anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:account]
+          expect(commands['add_account'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request POST /accounts' do
+          project.options = {
+            account: 'test_name@example.com'
+          }.with_indifferent_access
+          payload = {
+            'project_id' => 1,
+            'account_id' => 1
+          }
+          expect(project.connection).to receive(:post).with('/assignments', payload)
+          project.add_account('project_name')
+        end
+
+        it 'display message' do
+          project.options = {
+            account: 'test_name@example.com'
+          }.with_indifferent_access
+          expect(project).to receive(:output).with(mock_response)
+          project.add_account('project_name')
+        end
+      end
+
+      describe '#remove-account' do
+        let(:mock_response) { double(status: 204, headers: [], body: JSON.dump('')) }
+        before do
+          allow(project).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
+          allow(project).to receive(:find_id_by).with(:account, :email, anything, project_id: 1).and_return(1)
+          allow(project).to receive(:find_id_by).with(:assignment, :account_id, anything, project_id: 1).and_return(1)
+          allow(project.connection).to receive(:delete).with('/assignments', anything).and_return(mock_response)
+        end
+
+        it 'allow valid options' do
+          allowed_options = [:account]
+          expect(commands['remove_account'].options.keys).to match_array(allowed_options)
+        end
+
+        it 'request DELETE /assignments/:id' do
+          project.options = {
+            account: 'test_name@example.com'
+          }
+          expect(project.connection).to receive(:delete).with('/assignments/1')
+          project.remove_account('project_name')
+        end
+
+        it 'display message' do
+          expect(project).to receive(:message)
+          project.remove_account('project_name')
         end
       end
     end

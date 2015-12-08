@@ -21,7 +21,7 @@ module CloudConductorCli
 
       before do
         allow(CloudConductorCli::Helpers::Connection).to receive(:new).and_return(double(get: true, post: true, put: true, delete: true, request: true))
-        allow(pattern).to receive(:find_id_by).with(:pattern, :name, anything).and_return(mock_pattern[:id])
+        allow(pattern).to receive(:find_id_by).with(:pattern, :name, anything, anything).and_return(mock_pattern[:id])
         allow(pattern).to receive(:find_id_by).with(:project, :name, anything).and_return(1)
         allow(pattern).to receive(:output)
         allow(pattern).to receive(:message)
@@ -30,22 +30,31 @@ module CloudConductorCli
       describe '#list' do
         let(:mock_response) { double(status: 200, headers: [], body: JSON.dump([mock_pattern])) }
         before do
-          allow(pattern.connection).to receive(:get).with('/patterns').and_return(mock_response)
+          allow(pattern.connection).to receive(:get).with('/patterns', anything).and_return(mock_response)
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['list'].options.keys).to match_array(allowed_options)
         end
 
         it 'request GET /patterns' do
-          expect(pattern.connection).to receive(:get).with('/patterns')
+          expect(pattern.connection).to receive(:get).with('/patterns', 'project_id' => nil)
           pattern.list
         end
 
         it 'display record list' do
           expect(pattern).to receive(:output).with(mock_response)
           pattern.list
+        end
+
+        describe 'with project' do
+          it 'request GET /patterns' do
+            pattern.options = { project: 'project_name' }.with_indifferent_access
+            expect(pattern).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(pattern.connection).to receive(:get).with('/patterns', 'project_id' => 1)
+            pattern.list
+          end
         end
       end
 
@@ -56,7 +65,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['show'].options.keys).to match_array(allowed_options)
         end
 
@@ -68,6 +77,16 @@ module CloudConductorCli
         it 'display record details' do
           expect(pattern).to receive(:output).with(mock_response)
           pattern.show('pattern_name')
+        end
+
+        describe 'with project' do
+          it 'request GET /patterns' do
+            pattern.options = { project: 'project_name' }.with_indifferent_access
+            expect(pattern).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(pattern).to receive(:find_id_by).with(:pattern, :name, 'pattern_name', project_id: 1)
+            expect(pattern.connection).to receive(:get).with("/patterns/#{mock_pattern[:id]}")
+            pattern.show('pattern_name')
+          end
         end
       end
 
@@ -104,7 +123,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:url, :revision]
+          allowed_options = [:url, :revision, :project]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
@@ -121,6 +140,22 @@ module CloudConductorCli
           expect(pattern).to receive(:output).with(mock_response)
           pattern.update('pattern_name')
         end
+
+        describe 'with project' do
+          it 'request PUT /patterns/:id with payload' do
+            except_attributes = %i(id project_id name type protocol parameters roles)
+            pattern.options = mock_pattern.except(*except_attributes)
+              .merge(project: 'project_name')
+              .with_indifferent_access
+
+            expect(pattern).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(pattern).to receive(:find_id_by).with(:pattern, :name, 'pattern_name', project_id: 1)
+
+            payload = pattern.options.except('project')
+            expect(pattern.connection).to receive(:put).with("/patterns/#{mock_pattern[:id]}", payload)
+            pattern.update('pattern_name')
+          end
+        end
       end
 
       describe '#delete' do
@@ -130,7 +165,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = []
+          allowed_options = [:project]
           expect(commands['delete'].options.keys).to match_array(allowed_options)
         end
 
@@ -142,6 +177,17 @@ module CloudConductorCli
         it 'display message' do
           expect(pattern).to receive(:message)
           pattern.delete('pattern_name')
+        end
+
+        describe 'with project' do
+          it 'request DELETE /patterns/:id' do
+            pattern.options = { project: 'project_name' }.with_indifferent_access
+            expect(pattern).to receive(:find_id_by).with(:project, :name, 'project_name')
+            expect(pattern).to receive(:find_id_by).with(:pattern, :name, 'pattern_name', project_id: 1)
+
+            expect(pattern.connection).to receive(:delete).with("/patterns/#{mock_pattern[:id]}")
+            pattern.delete('pattern_name')
+          end
         end
       end
     end

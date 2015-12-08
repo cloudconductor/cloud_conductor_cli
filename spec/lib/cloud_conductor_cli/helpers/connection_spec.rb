@@ -64,7 +64,8 @@ module CloudConductorCli
       describe '#get' do
         it 'call request with :get' do
           path = '/path'
-          expect(connection).to receive(:request).with(:get, path)
+          payload = {}
+          expect(connection).to receive(:request).with(:get, path, payload)
           connection.get(path)
         end
       end
