@@ -27,7 +27,8 @@ module CloudConductorCli
           blueprint_id: 1,
           pattern_id: 1,
           revision: 'develop',
-          os_version: 'CentOS-6.5'
+          platform: 'CentOS',
+          platform_version: '6.5'
         }.with_indifferent_access
       end
 
@@ -268,7 +269,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:pattern, :revision, :os_version, :project]
+          allowed_options = [:pattern, :revision, :platform, :platform_version, :project]
           expect(commands['pattern_add'].options.keys).to match_array(allowed_options)
         end
 
@@ -308,7 +309,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:pattern, :revision, :os_version, :project]
+          allowed_options = [:pattern, :revision, :platform, :platform_version, :project]
           expect(commands['pattern_update'].options.keys).to match_array(allowed_options)
         end
 

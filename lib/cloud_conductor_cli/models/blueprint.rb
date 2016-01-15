@@ -83,7 +83,8 @@ module CloudConductorCli
       desc 'pattern-add BLUEPRINT', 'Add pattern to blueprint'
       method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
       method_option :revision, type: :string, desc: 'Pattern revision'
-      method_option :os_version, type: :string, desc: 'OS version'
+      method_option :platform, type: :string, required: true, desc: 'Platform name'
+      method_option :platform_version, type: :string, desc: 'Platform version'
       method_option :project, type: :string, desc: 'Project name or id'
       def pattern_add(blueprint)
         project_id = find_id_by(:project, :name, options[:project]) if options[:project]
@@ -99,7 +100,8 @@ module CloudConductorCli
       desc 'pattern-update BLUEPRINT', 'Update pattern on blueprint'
       method_option :pattern, type: :string, required: true, desc: 'Pattern name or id'
       method_option :revision, type: :string, desc: 'Pattern revision'
-      method_option :os_version, type: :string, desc: 'OS version'
+      method_option :platform, type: :string, desc: 'Platform name'
+      method_option :platform_version, type: :string, desc: 'Platform version'
       method_option :project, type: :string, desc: 'Project name or id'
       def pattern_update(blueprint)
         project_id = find_id_by(:project, :name, options[:project]) if options[:project]
