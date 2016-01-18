@@ -91,20 +91,7 @@ module CloudConductorCli
 
       describe '#template_parameters' do
         let(:mock_response_body) do
-          JSON.dump(sample_pattern: {
-                      Parameter1: {
-                        Type: 'String',
-                        Description: 'test1'
-                      },
-                      Parameter2: {
-                        Type: 'Number',
-                        Description: 'test2'
-                      },
-                      Parameter3: {
-                        Type: 'CommaDelimitedList',
-                        Description: 'test3'
-                      }
-                    })
+          '{ "sample_pattern": {} }'
         end
         let(:mock_response) { double(status: 200, headers: [], body: mock_response_body) }
 
@@ -124,22 +111,94 @@ module CloudConductorCli
         end
       end
 
+      describe '#default_parameters' do
+        let(:template_parameters) do
+          {
+            'sample_pattern' => {
+              'cloud_formation' => {
+                'Parameter1' => {
+                  'Type' => 'String',
+                  'Description' => 'test1',
+                  'Default' => 'default1'
+                }
+              },
+              'terraform' => {
+                'aws' => {
+                  'parameter2' => {
+                    'description' => 'test2',
+                    'default' => 'default2'
+                  }
+                },
+                'openstack' => {
+                  'parameter2' => {
+                    'description' => 'test2',
+                    'default' => 'default2'
+                  }
+                }
+              }
+            }
+          }
+        end
+
+        before do
+          allow(record).to receive(:template_parameters).and_return(template_parameters)
+        end
+
+        it 'extract default value from template_parameters' do
+          result = record.default_parameters('blueprint1', '1')
+          expect(result).to eq(
+            'sample_pattern' => {
+              'cloud_formation' => {
+                'Parameter1' => {
+                  'type' => 'static',
+                  'value' => 'default1'
+                }
+              },
+              'terraform' => {
+                'aws' => {
+                  'parameter2' => {
+                    'type' => 'static',
+                    'value' => 'default2'
+                  }
+                },
+                'openstack' => {
+                  'parameter2' => {
+                    'type' => 'static',
+                    'value' => 'default2'
+                  }
+                }
+              }
+            }
+          )
+        end
+      end
+
       describe '#build_template_parameters' do
-        let(:mock_response_body) do
-          JSON.dump(sample_pattern: {
-                      Parameter1: {
-                        Type: 'String',
-                        Description: 'test1'
-                      },
-                      Parameter2: {
-                        Type: 'Number',
-                        Description: 'test2'
-                      },
-                      Parameter3: {
-                        Type: 'CommaDelimitedList',
-                        Description: 'test3'
-                      }
-                    })
+        let(:default_parameters) do
+          {
+            'sample_pattern' => {
+              'cloud_formation' => {
+                'Parameter1' => {
+                  'type' => 'static',
+                  'value' => 'default1'
+                }
+              },
+              'terraform' => {
+                'aws' => {
+                  'parameter2' => {
+                    'type' => 'static',
+                    'value' => 'default2'
+                  }
+                },
+                'openstack' => {
+                  'parameter2' => {
+                    'type' => 'static',
+                    'value' => 'default2'
+                  }
+                }
+              }
+            }
+          }
         end
         let(:options) do
           {
@@ -151,11 +210,30 @@ module CloudConductorCli
           }.stringify_keys
         end
         let(:parameter_file) do
-          JSON.dump(sample_pattern: {
-                      Parameter1: 'test1',
-                      Parameter2: 10,
-                      Parameter3: 'test1,test2,test3'
-                    })
+          JSON.dump(
+            sample_pattern: {
+              cloud_formation: {
+                Parameter1: {
+                  type: :static,
+                  value: 'test1'
+                },
+                ParameterNew: {
+                  type: :static,
+                  value: 10
+                }
+              },
+              terraform: {
+                aws: {
+                  parameter2: {
+                    type: :module,
+                    value: 'common_network.subnet_ids'
+                  }
+                },
+                openstack: {
+                }
+              }
+            }
+          )
         end
         let(:user_attribute_file) do
           JSON.dump(cookbook_name: {
@@ -171,7 +249,7 @@ module CloudConductorCli
 
         context 'with parameter_file' do
           before do
-            allow(record).to receive(:default_parameters).and_return({})
+            allow(record).to receive(:default_parameters).and_return(default_parameters)
           end
 
           it 'call File.read' do
@@ -179,9 +257,38 @@ module CloudConductorCli
             record.build_template_parameters(nil, options)
           end
 
-          it 'returns template_parameters' do
+          it 'returns template_parameters which merged default and specified file' do
+            expected_json = JSON.dump(
+              'sample_pattern' => {
+                'cloud_formation' => {
+                  'Parameter1' => {
+                    'type' => 'static',
+                    'value' => 'test1'
+                  },
+                  ParameterNew: {
+                    type: :static,
+                    value: 10
+                  }
+                },
+                'terraform' => {
+                  'aws' => {
+                    'parameter2' => {
+                      type: :module,
+                      value: 'common_network.subnet_ids'
+                    }
+                  },
+                  'openstack' => {
+                    'parameter2' => {
+                      'type' => 'static',
+                      'value' => 'default2'
+                    }
+                  }
+                }
+              }
+            )
+
             result = record.build_template_parameters(nil, options)
-            expect(result).to eq(parameter_file)
+            expect(result).to eq(expected_json)
           end
         end
 
