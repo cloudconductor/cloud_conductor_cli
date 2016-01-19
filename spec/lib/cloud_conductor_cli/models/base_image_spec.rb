@@ -9,7 +9,8 @@ module CloudConductorCli
         {
           id: 1,
           cloud_id: 1,
-          os: 'CentOS-6.5',
+          platform: 'CentOS',
+          platform_version: '6.5',
           source_image: 'uuid',
           ssh_username: 'ec2-user'
         }
@@ -148,7 +149,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:cloud, :source_image, :ssh_username, :project]
+          allowed_options = [:cloud, :source_image, :ssh_username, :project, :platform, :platform_version]
           expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
@@ -188,7 +189,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:source_image, :ssh_username, :cloud, :project]
+          allowed_options = [:source_image, :ssh_username, :cloud, :project, :platform, :platform_version]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
