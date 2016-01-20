@@ -36,7 +36,7 @@ module CloudConductorCli
 
       def read_single_parameter(key, options)
         puts "  #{key}: #{options[:description]}"
-        loop do
+        value = loop do
           type = Readline.readline('  Type(static, module) > ')
           type = 'static' if  type.nil? || type.empty?
           next unless %w(static module).include? type
@@ -45,6 +45,8 @@ module CloudConductorCli
           input = options[:default].to_s if options[:default] && (input.nil? || input.empty?)
           break { type: type, value: input } if validate_parameter(input, options)
         end
+        puts
+        value
       end
 
       def validate_parameter(input, options)
