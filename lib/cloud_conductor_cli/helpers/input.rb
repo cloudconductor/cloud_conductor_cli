@@ -42,7 +42,7 @@ module CloudConductorCli
           next unless %w(static module).include? type
 
           input = Readline.readline("  Default [#{options[:default]}] > ")
-          input = options[:default] if options[:default] && (input.nil? || input.empty?)
+          input = options[:default].to_s if options[:default] && (input.nil? || input.empty?)
           break { type: type, value: input } if validate_parameter(input, options)
         end
       end
