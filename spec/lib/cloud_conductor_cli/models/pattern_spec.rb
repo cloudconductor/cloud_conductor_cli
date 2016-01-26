@@ -97,14 +97,14 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:project, :url, :revision]
+          allowed_options = [:project, :url, :revision, :secret_key_file]
           expect(commands['create'].options.keys).to match_array(allowed_options)
         end
 
         it 'request POST /patterns with payload' do
           except_attributes = %i(id project_id name type protocol parameters roles)
-          pattern.options = mock_pattern.except(*except_attributes).merge('project' => 'project_name')
-          payload = pattern.options.except('project').merge('project_id' => 1)
+          pattern.options = mock_pattern.except(*except_attributes).merge('project' => 'project_name', 'secret_key_file' => 'dummy_file')
+          payload = pattern.options.except('project', 'secret_key_file').merge('project_id' => 1, 'secret_key' => nil)
           expect(pattern.connection).to receive(:post).with('/patterns', payload)
           pattern.create
         end
@@ -123,14 +123,14 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:url, :revision, :project]
+          allowed_options = [:url, :revision, :project, :secret_key_file]
           expect(commands['update'].options.keys).to match_array(allowed_options)
         end
 
         it 'request PUT /patterns/:id with payload' do
           except_attributes = %i(id project_id name type protocol parameters roles)
           pattern.options = mock_pattern.except(*except_attributes)
-          payload = pattern.options
+          payload = pattern.options.merge('secret_key' => nil)
           expect(pattern.connection).to receive(:put).with("/patterns/#{mock_pattern[:id]}", payload)
           pattern.update('pattern_name')
         end
@@ -151,7 +151,7 @@ module CloudConductorCli
             expect(pattern).to receive(:find_id_by).with(:project, :name, 'project_name')
             expect(pattern).to receive(:find_id_by).with(:pattern, :name, 'pattern_name', project_id: 1)
 
-            payload = pattern.options.except('project')
+            payload = pattern.options.except('project').merge('secret_key' => nil)
             expect(pattern.connection).to receive(:put).with("/patterns/#{mock_pattern[:id]}", payload)
             pattern.update('pattern_name')
           end
