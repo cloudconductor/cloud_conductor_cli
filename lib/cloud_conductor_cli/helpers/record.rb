@@ -81,10 +81,27 @@ module CloudConductorCli
       end
 
       def default_parameters(blueprint_name, version)
-        defaults = template_parameters(blueprint_name, version)
-        defaults.each do |_, parameters|
-          parameters.each do |key, value|
-            parameters[key] = value['Default']
+        template_parameters(blueprint_name, version).each_with_object({}) do |(pattern, parameters), results|
+          results[pattern] = {
+            'cloud_formation' => {},
+            'terraform' => {}
+          }
+
+          parameters['cloud_formation'].each do |key, options|
+            results[pattern]['cloud_formation'][key] = {
+              'type' => 'static',
+              'value' => options['Default']
+            }
+          end
+
+          parameters['terraform'].keys.each do |cloud|
+            results[pattern]['terraform'][cloud] = {}
+            parameters['terraform'][cloud].each do |key, options|
+              results[pattern]['terraform'][cloud][key] = {
+                'type' => 'static',
+                'value' => options['default']
+              }
+            end
           end
         end
       end
