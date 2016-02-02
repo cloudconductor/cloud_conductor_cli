@@ -12,6 +12,7 @@ module CloudConductorCli
     register Models::Environment, 'environment', 'environment', 'Subcommand to manage environments'
     register Models::Application, 'application', 'application', 'Subcommand to manage applications'
     register Models::Role, 'role', 'role', 'Subcommand to manage role'
+    register Models::Audit, 'audit', 'audit', 'Subcommand to manage audits'
 
     desc 'version', 'Show version number'
     def version
