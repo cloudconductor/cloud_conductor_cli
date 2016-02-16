@@ -49,7 +49,7 @@ module CloudConductorCli
 
       desc 'update BASE_IMAGE', 'Update base_image information'
       method_option :source_image, type: :string, desc: 'Base image id'
-      method_option :ssh_username, type: :string, desc: 'SSH login username', default: 'ec2-user'
+      method_option :ssh_username, type: :string, desc: 'SSH login username'
       method_option :cloud, type: :string, desc: 'Cloud name or id'
       method_option :platform, type: :string, desc: 'Platform name'
       method_option :platform_version, type: :string, desc: 'Platform version'
