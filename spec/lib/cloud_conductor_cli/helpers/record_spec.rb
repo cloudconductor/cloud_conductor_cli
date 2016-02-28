@@ -97,16 +97,16 @@ module CloudConductorCli
 
         before do
           allow(record).to receive(:find_id_by).with(:blueprint, :name, 'blueprint_name').and_return(1)
-          allow(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters').and_return(mock_response)
+          allow(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters', anything).and_return(mock_response)
         end
 
-        it 'request GET /blueprint/:id/histories/:version/parameters' do
-          expect(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters')
-          record.template_parameters('blueprint_name', 1)
+        it 'request GET /blueprint/:id/histories/:version/parameters with cloud' do
+          expect(record.connection).to receive(:get).with('/blueprints/1/histories/1/parameters', cloud_ids: '1')
+          record.template_parameters('blueprint_name', 1, '1')
         end
 
         it 'returns template parameters' do
-          result = record.template_parameters('blueprint_name', 1)
+          result = record.template_parameters('blueprint_name', 1, '1')
           expect(result).to match(JSON.parse(mock_response_body))
         end
       end
@@ -145,7 +145,7 @@ module CloudConductorCli
         end
 
         it 'extract default value from template_parameters' do
-          result = record.default_parameters('blueprint1', '1')
+          result = record.default_parameters('blueprint1', '1', '1, 2')
           expect(result).to eq(
             'sample_pattern' => {
               'cloud_formation' => {
@@ -254,7 +254,7 @@ module CloudConductorCli
 
           it 'call File.read' do
             expect(File).to receive(:read).with('/path/to/parameter_file')
-            record.build_template_parameters(nil, options)
+            record.build_template_parameters(nil, options, '1')
           end
 
           it 'returns template_parameters which merged default and specified file' do
@@ -287,7 +287,7 @@ module CloudConductorCli
               }
             )
 
-            result = record.build_template_parameters(nil, options)
+            result = record.build_template_parameters(nil, options, '1')
             expect(result).to eq(expected_json)
           end
         end
@@ -295,12 +295,12 @@ module CloudConductorCli
         context 'without parameter_file' do
           context 'with options[:blueprint]' do
             it 'call input_template_parameters' do
-              expect(record).to receive(:input_template_parameters).with(options['blueprint'], 1)
-              record.build_template_parameters(nil, options.except('parameter_file'))
+              expect(record).to receive(:input_template_parameters).with(options['blueprint'], 1, '1')
+              record.build_template_parameters(nil, options.except('parameter_file'), '1')
             end
 
             it 'returns template_parameters' do
-              result = record.build_template_parameters(nil, options.except('parameter_file'))
+              result = record.build_template_parameters(nil, options.except('parameter_file'), '1')
               expect(result).to eq(parameter_file)
             end
           end
@@ -316,12 +316,12 @@ module CloudConductorCli
             end
 
             it 'call input_template_parameters' do
-              expect(record).to receive(:input_template_parameters).with(1, 1)
-              record.build_template_parameters('environment_name', new_options)
+              expect(record).to receive(:input_template_parameters).with(1, 1, '1')
+              record.build_template_parameters('environment_name', new_options, '1')
             end
 
             it 'returns template_parameters' do
-              result = record.build_template_parameters('environment_name', new_options)
+              result = record.build_template_parameters('environment_name', new_options, '1')
               expect(result).to eq(parameter_file)
             end
           end

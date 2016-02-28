@@ -15,15 +15,15 @@ module CloudConductorCli
         end
 
         it 'call template_parameters' do
-          expect(@input).to receive(:template_parameters).with('dummy_pattern_name', 1).and_return({})
+          expect(@input).to receive(:template_parameters).with('dummy_pattern_name', 1, '1').and_return({})
 
-          @input.input_template_parameters('dummy_pattern_name', 1)
+          @input.input_template_parameters('dummy_pattern_name', 1, '1')
         end
 
         it 'call read_user_inputs' do
           expect(@input).to receive(:read_user_inputs).with({}).and_return([[]])
 
-          @input.input_template_parameters('dummy_pattern_name', 1)
+          @input.input_template_parameters('dummy_pattern_name', 1, '1')
         end
       end
 
