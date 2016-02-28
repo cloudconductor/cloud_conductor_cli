@@ -27,7 +27,7 @@ module CloudConductorCli
       desc 'create', 'Create cloud'
       method_option :project, type: :string, required: true, desc: 'Project name or id'
       method_option :name, type: :string, required: true, desc: 'User specified cloud name'
-      method_option :type, type: :string, required: true, desc: 'Type of cloud', enum: %w(aws openstack)
+      method_option :type, type: :string, required: true, desc: 'Type of cloud', enum: %w(aws openstack wakame-vdc)
       method_option :entry_point, type: :string, required: true,
                                   desc: 'AWS Region name (e.g. us-east-1) or OpenStack Keystone endpoint url'
       method_option :key, type: :string, required: true, desc: 'AWS AccessKeyId or OpenStack user name'
@@ -44,7 +44,7 @@ module CloudConductorCli
 
       desc 'update CLOUD', 'Update cloud information'
       method_option :name, type: :string, desc: 'User specified cloud name'
-      method_option :type, type: :string, desc: 'Type of cloud', enum: %w(aws openstack)
+      method_option :type, type: :string, desc: 'Type of cloud', enum: %w(aws openstack wakame-vdc)
       method_option :entry_point, type: :string, desc: 'AWS Region name (e.g. us-east-1) or OpenStack Keystone endpoint url'
       method_option :key, type: :string, desc: 'AWS AccessKeyId or OpenStack user name'
       method_option :secret, type: :string, desc: 'AWS SecretAccessKey or OpenStack user passowrd'
