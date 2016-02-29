@@ -40,7 +40,7 @@ module CloudConductorCli
                                      long_desc: 'If this option does not specified, open interactive shell to answer parameters.'
       method_option :user_attribute_file, type: :string, desc: 'Load additional chef attributes from json file'
       method_option :project, type: :string, desc: 'Project name or id'
-      def create
+      def create # rubocop:disable Metrics/AbcSize
         project_id = find_id_by(:project, :name, options[:project]) if options[:project]
         system_id = find_id_by(:system, :name, options[:system], project_id: project_id)
         blueprint_id = find_id_by(:blueprint, :name, options[:blueprint], project_id: project_id)
