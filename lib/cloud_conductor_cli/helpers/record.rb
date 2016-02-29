@@ -84,6 +84,9 @@ module CloudConductorCli
 
       def default_parameters(blueprint_name, version, cloud_ids)
         template_parameters(blueprint_name, version, cloud_ids).each_with_object({}) do |(pattern, parameters), results|
+          parameters['cloud_formation'] ||= {}
+          parameters['terraform'] ||= {}
+
           results[pattern] = {
             'cloud_formation' => {},
             'terraform' => {}
