@@ -49,7 +49,8 @@ module CloudConductorCli
             priority: (options['clouds'].size - i) * 10 }
         end
         candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
-        template_parameters = build_template_parameters(nil, options)
+        cloud_ids = candidates_attributes.map { |candidate| candidate[:cloud_id] }.join(', ')
+        template_parameters = build_template_parameters(nil, options, cloud_ids)
         user_attributes = build_user_attributes(options)
         payload = declared(options, self.class, :create)
                   .except('system', 'blueprint', 'clouds', 'parameter_file', 'user_attribute_file', 'project')
@@ -87,10 +88,11 @@ module CloudConductorCli
           end
           candidates_attributes.reject! { |candidates| candidates[:cloud_id].nil? }
           payload.merge!('candidates_attributes' => candidates_attributes)
+          cloud_ids = candidates_attributes.map { |candidate| candidate[:cloud_id] }.join(', ')
         end
 
         if options['parameter_file']
-          template_parameters = build_template_parameters(environment, options)
+          template_parameters = build_template_parameters(environment, options, cloud_ids)
           payload.merge!('template_parameters' => template_parameters)
         end
 

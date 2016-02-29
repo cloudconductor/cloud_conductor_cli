@@ -4,13 +4,16 @@ require 'json'
 module CloudConductorCli
   module Helpers
     module Input
-      def input_template_parameters(blueprint_name, version)
-        parameters = template_parameters(blueprint_name, version)
+      def input_template_parameters(blueprint_name, version, cloud_ids)
+        parameters = template_parameters(blueprint_name, version, cloud_ids)
         read_user_inputs(parameters)
       end
 
       def read_user_inputs(parameters)
         parameters.each_with_object({}) do |(pattern_name, params), result|
+          params['cloud_formation'] ||= {}
+          params['terraform'] ||= {}
+
           puts "Input #{pattern_name} Parameters"
           result[pattern_name] = {
             'cloud_formation' => {},
