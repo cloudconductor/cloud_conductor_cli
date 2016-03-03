@@ -74,14 +74,19 @@ module CloudConductorCli
         end
       end
 
-      def template_parameters(blueprint_name, version)
+      def template_parameters(blueprint_name, version, cloud_ids)
         blueprint_id = find_id_by(:blueprint, :name, blueprint_name)
-        response = connection.get("/blueprints/#{blueprint_id}/histories/#{version}/parameters")
+        payload = {}
+        payload[:cloud_ids] = cloud_ids if cloud_ids
+        response = connection.get("/blueprints/#{blueprint_id}/histories/#{version}/parameters", payload)
         JSON.parse(response.body)
       end
 
-      def default_parameters(blueprint_name, version)
-        template_parameters(blueprint_name, version).each_with_object({}) do |(pattern, parameters), results|
+      def default_parameters(blueprint_name, version, cloud_ids)
+        template_parameters(blueprint_name, version, cloud_ids).each_with_object({}) do |(pattern, parameters), results|
+          parameters['cloud_formation'] ||= {}
+          parameters['terraform'] ||= {}
+
           results[pattern] = {
             'cloud_formation' => {},
             'terraform' => {}
@@ -106,7 +111,7 @@ module CloudConductorCli
         end
       end
 
-      def build_template_parameters(environment, options)
+      def build_template_parameters(environment, options, cloud_ids)
         if options['blueprint']
           blueprint_name = options['blueprint']
           version = options['version']
@@ -119,10 +124,10 @@ module CloudConductorCli
         end
 
         if options['parameter_file']
-          defaults = default_parameters(blueprint_name, version)
+          defaults = default_parameters(blueprint_name, version, cloud_ids)
           input_parameters = defaults.deep_merge(JSON.parse(File.read(options['parameter_file'])))
         else
-          input_parameters = blueprint_name ? input_template_parameters(blueprint_name, version) : {}
+          input_parameters = blueprint_name ? input_template_parameters(blueprint_name, version, cloud_ids) : {}
         end
         JSON.dump(input_parameters || {})
       end
