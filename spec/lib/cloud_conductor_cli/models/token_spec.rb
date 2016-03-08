@@ -7,7 +7,7 @@ module CloudConductorCli
       let(:commands) { CloudConductorCli::Models::Token.commands }
       let(:mock_token) do
         {
-          auth_token: "1ozvZ5BU1GMy5sMNrykq"
+          auth_token: '1ozvZ5BU1GMy5sMNrykq'
         }
       end
 
@@ -24,7 +24,7 @@ module CloudConductorCli
         end
 
         it 'allow valid options' do
-          allowed_options = [:email,:password]
+          allowed_options = [:email, :password]
           expect(commands['get'].options.keys).to match_array(allowed_options)
         end
 
@@ -37,7 +37,7 @@ module CloudConductorCli
           it 'request POST /tokens' do
             token.options = { email: 'test@example.com', password: 'password' }.with_indifferent_access
             payload = {
-              'email' => 'test@example.com' ,
+              'email' => 'test@example.com',
               'password' => 'password'
             }
             expect(token.connection).to receive(:post).with('/tokens', payload)
