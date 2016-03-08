@@ -12,7 +12,7 @@ module CloudConductorCli
           platform: 'CentOS',
           platform_version: '6.5',
           source_image: 'uuid',
-          ssh_username: 'ec2-user'
+          ssh_username: 'centos'
         }
       end
 
