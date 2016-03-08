@@ -11,8 +11,8 @@ module CloudConductorCli
 
       def get
         payload = declared(options, self.class, :get)
-        payload = payload.merge('email' => ENV['CC_AUTH_ID'])
-        payload = payload.merge('password' => ENV['CC_AUTH_PASSWORD'])
+        payload = payload.reverse_merge('email' => ENV['CC_AUTH_ID'])
+        payload = payload.reverse_merge('password' => ENV['CC_AUTH_PASSWORD'])
         response = connection.post('/tokens', payload)
         output(response)
       end

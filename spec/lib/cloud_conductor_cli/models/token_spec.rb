@@ -34,11 +34,26 @@ module CloudConductorCli
         end
 
         describe 'with email and password' do
-          it 'request POST /tokens' do
+          before do
+            ENV['CC_AUTH_ID'] = 'from_env@example.com'
+            ENV['CC_AUTH_PASSWORD'] = 'from_env_password'
+          end
+
+          it 'request POST /tokens with user specified credentials' do
             token.options = { email: 'test@example.com', password: 'password' }.with_indifferent_access
             payload = {
               'email' => 'test@example.com',
               'password' => 'password'
+            }
+            expect(token.connection).to receive(:post).with('/tokens', payload)
+            token.get
+          end
+
+          it 'request POST /tokens with credentials which defined in environment variables' do
+            token.options = {}.with_indifferent_access
+            payload = {
+              'email' => 'from_env@example.com',
+              'password' => 'from_env_password'
             }
             expect(token.connection).to receive(:post).with('/tokens', payload)
             token.get
