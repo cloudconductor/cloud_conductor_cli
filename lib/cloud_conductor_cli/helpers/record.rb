@@ -118,7 +118,13 @@ module CloudConductorCli
         elsif environment
           environment_id = find_id_by(:environment, :name, environment)
           environment = find_by(:environment, id: environment_id)
-          blueprint_history = find_by(:history, id: environment['blueprint_history_id'], parent_model: :blueprint)
+          blueprints = list_records(:blueprint)
+          blueprint_history = nil
+          blueprints.each do |blueprint|
+            histories = list_records(:histories, parent_model: :blueprint, parent_id: blueprint['id'])
+            blueprint_history = histories.find { |history| history['id'] == environment['blueprint_history_id'] }
+            break if blueprint_history
+          end
           blueprint_name = blueprint_history ? blueprint_history['blueprint_id'] : nil
           version = blueprint_history ? blueprint_history['version'] : nil
         end
