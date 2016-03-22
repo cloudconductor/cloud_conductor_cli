@@ -3,7 +3,7 @@ require 'thor'
 module CloudConductorCli
   class Client < Thor
     register Models::Account, 'account', 'account', 'Subcommand to manage accounts'
-    register Models::Token, 'token', 'account', 'Subcommand to manage accounts of token'
+    register Models::Token, 'token', 'token', 'Subcommand to manage token of accounts'
     register Models::Project, 'project', 'project', 'Subcommand to manage projects'
     register Models::Cloud, 'cloud', 'cloud', 'Subcommand to manage clouds'
     register Models::BaseImage, 'base_image', 'base_image', 'Subcommand to manage base_image'
