@@ -308,11 +308,13 @@ module CloudConductorCli
           context 'without options[:blueprint]' do
             let(:new_options) { options.except('parameter_file', 'blueprint') }
             let(:mock_environment) { { id: 1, blueprint_history_id: 1, system_id: 1, name: 'environment_name' }.stringify_keys }
+            let(:mock_blueprint) { { id: 1 }.stringify_keys }
             let(:mock_blueprint_history) { { id: 1, version: 1, blueprint_id: 1 }.stringify_keys }
             before do
               allow(record).to receive(:find_id_by).with(:environment, :name, 'environment_name').and_return(1)
               allow(record).to receive(:find_by).with(:environment, id: 1).and_return(mock_environment)
-              allow(record).to receive(:find_by).with(:history, id: 1, parent_model: :blueprint).and_return(mock_blueprint_history)
+              allow(record).to receive(:list_records).with(:blueprint).and_return([mock_blueprint])
+              allow(record).to receive(:list_records).with(:histories, parent_model: :blueprint, parent_id: 1).and_return([mock_blueprint_history])
             end
 
             it 'call input_template_parameters' do
