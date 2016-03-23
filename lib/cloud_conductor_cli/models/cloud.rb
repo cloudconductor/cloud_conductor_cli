@@ -31,7 +31,7 @@ module CloudConductorCli
       method_option :entry_point, type: :string, required: true,
                                   desc: 'AWS Region name (e.g. us-east-1) or OpenStack Keystone endpoint url'
       method_option :key, type: :string, required: true, desc: 'AWS AccessKeyId or OpenStack user name'
-      method_option :secret, type: :string, required: true, desc: 'AWS SecretAccessKey or OpenStack user passowrd'
+      method_option :secret, type: :string, desc: 'AWS SecretAccessKey or OpenStack user passowrd'
       method_option :description, type: :string, desc: 'Cloud description'
       method_option :tenant_name, type: :string, desc: '(OpenStack) OpenStack tenant name'
       def create
