@@ -112,10 +112,9 @@ module CloudConductorCli
       end
 
       def build_template_parameters(environment, options, cloud_ids)
-        if options['blueprint']
-          blueprint_name = options['blueprint']
-          version = options['version']
-        elsif environment
+        blueprint_name = options['blueprint']
+        version = options['version']
+        if environment && blueprint_name.nil?
           environment_id = find_id_by(:environment, :name, environment)
           environment = find_by(:environment, id: environment_id)
           blueprints = list_records(:blueprint)
