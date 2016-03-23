@@ -7,6 +7,7 @@ gem 'activesupport'
 
 group :test do
   gem 'rspec'
+  gem 'rspec_junit_formatter'
   gem 'rubocop'
   gem 'pry-byebug'
   gem 'pry-doc'
