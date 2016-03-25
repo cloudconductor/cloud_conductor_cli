@@ -113,19 +113,11 @@ module CloudConductorCli
 
       def build_template_parameters(environment, options, cloud_ids)
         blueprint_name = options['blueprint']
-        version = options['version']
+        version = options['version'] || get_latest_version(blueprint_name)
         if environment && blueprint_name.nil?
-          environment_id = find_id_by(:environment, :name, environment)
-          environment = find_by(:environment, id: environment_id)
-          blueprints = list_records(:blueprint)
-          blueprint_history = nil
-          blueprints.each do |blueprint|
-            histories = list_records(:histories, parent_model: :blueprint, parent_id: blueprint['id'])
-            blueprint_history = histories.find { |history| history['id'] == environment['blueprint_history_id'] }
-            break if blueprint_history
-          end
-          blueprint_name = blueprint_history ? blueprint_history['blueprint_id'] : nil
-          version = blueprint_history ? blueprint_history['version'] : nil
+          history = get_latest_history_from_environment(environment)
+          blueprint_name = history ? history['blueprint_id'] : nil
+          version = history ? history['version'] : nil
         end
 
         if options['parameter_file']
@@ -144,6 +136,27 @@ module CloudConductorCli
           user_attributes = {}
         end
         JSON.dump(user_attributes)
+      end
+
+      def get_latest_version(blueprint_name)
+        return nil unless blueprint_name
+        blueprint_id = find_id_by(:blueprint, :name, blueprint_name)
+
+        histories = list_records(:histories, parent_model: :blueprint, parent_id: blueprint_id)
+        histories.map { |history| history['version'].to_i }.max
+      end
+
+      def get_latest_history_from_environment(environment_name)
+        environment_id = find_id_by(:environment, :name, environment_name)
+        environment = find_by(:environment, id: environment_id)
+        blueprints = list_records(:blueprint)
+        blueprint_history = nil
+        blueprints.each do |blueprint|
+          histories = list_records(:histories, parent_model: :blueprint, parent_id: blueprint['id'])
+          blueprint_history = histories.find { |history| history['id'] == environment['blueprint_history_id'] }
+          break if blueprint_history
+        end
+        blueprint_history
       end
     end
   end
