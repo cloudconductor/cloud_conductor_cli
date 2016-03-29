@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 2.0.0 (2016/03/30)
+
+  - Support CloudConductor v2.0 API.
+
 ## version 1.1.0 (2015/09/30)
 
   - Support new format with metronome on `list-event` and `show-event`

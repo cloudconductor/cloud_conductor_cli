@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cloud_conductor_cli (2.0.0pre)
+    cloud_conductor_cli (2.0.0)
       activesupport (~> 4.1)
       faraday
       formatador
