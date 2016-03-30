@@ -3,8 +3,11 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in cloudconductor-cli.gemspec
 gemspec
 
+gem 'activesupport'
+
 group :test do
   gem 'rspec'
+  gem 'rspec_junit_formatter'
   gem 'rubocop'
   gem 'pry-byebug'
   gem 'pry-doc'
